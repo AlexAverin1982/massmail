@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %} {{ message.topic }} от {{ message.updated_at }} {% endblock %}
+{% block content %}
+<div class="container-fluid d-flex border">
+    <div class="row">
+        <div class="col">
+
+            <h2>Тема: {{ message.topic }}</h2>
+
+            <div class="d-flex align-content-end flex-wrap bd-highlight mb-5">
+                <h4>Сообщение: {{ message.text }}</h4>
+            </div>
+            <div class="mb-3">
+                <h5>Создано: {{ message.created_at }}</h5>
+                <h5>Отредактировано в последний раз: {{ message.updated_at }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="{% url 'edit_message' pk=message.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+    Изменить
+</a>
+<a href="{% url 'delete_message' pk=message.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+    Удалить
+</a>
+<a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">Назад</a>
+{% endblock %}
