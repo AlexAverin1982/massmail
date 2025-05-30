@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %} {{ product.name }} {% endblock %}
+{% block content %}
+	<h5>{{ message.created_at }}</h5>
+    <h2>Пользователь {{ message.name }} с почтой {{ message.email }} отправил(а) сообщение {{ message.message }}</h2>
+{% endblock %}
