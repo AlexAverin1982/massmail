@@ -1,3 +1,5 @@
+from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+from django.forms import CheckboxSelectMultiple, SelectMultiple
 from django.shortcuts import redirect
 from django.views import generic
 from django.urls import reverse_lazy, reverse
@@ -7,8 +9,8 @@ from django.utils.decorators import method_decorator
 
 from typing_extensions import Any
 
-from .models import Client, Message
-from .forms import ClientCreateForm, MessageCreateForm
+from .models import Client, Message, Mailing
+from .forms import ClientCreateForm, MessageCreateForm, MailingCreateForm
 
 
 class HomeView(generic.TemplateView):
@@ -17,8 +19,9 @@ class HomeView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'clients': Client.objects.all().order_by('full_name'),
+            'clients': Client.objects.all(),
             'messages': Message.objects.all().order_by('-updated_at'),
+            'mailings': Mailing.objects.all(),
         })
         return context
 
@@ -120,4 +123,50 @@ class MessageDeleteView(generic.DeleteView):
         super(MessageDeleteView, self).post(request, *args, **kwargs)
         return redirect('home')
 
+
 #######################################################################################################################
+
+class MailingCreateView(generic.edit.CreateView):
+    model = Mailing
+    form_class = MailingCreateForm
+    template_name = 'new_mailing.html'
+    context_object_name = 'mailing'
+
+    success_url = reverse_lazy('home')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'clients': Client.objects.all(),
+            'title': 'Новая рассылка',
+        })
+        return context
+    #
+    # def post(self, request, *args, **kwargs) -> Any:
+    #     form = self.get_form()
+    #     if form.is_valid():
+    #         profile = form.save(commit=False)
+    #         # profile.user = request.user
+    #         profile.save()
+    #
+    #     return super(MailingCreateView, self).post(request, *args, **kwargs)
+
+
+class MailingDetailView(generic.DetailView):
+    model = Mailing
+    template_name = "mailing_details.html"
+    context_object_name = 'mailing'
+
+
+class MailingUpdateView(generic.UpdateView):
+    model = Mailing
+    form_class = MailingCreateForm
+    template_name = 'new_mailing.html'
+    extra_context = {
+        'title': 'Редактирование рассылки',
+        'mailing_editing_mode': True,
+    }
+
+    def get_success_url(self):
+        return reverse("mailing_details", kwargs=self.kwargs)
+

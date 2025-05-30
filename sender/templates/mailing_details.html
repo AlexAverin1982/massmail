@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %} рассылка {{ mailing.id }} {% endblock %}
+{% block content %}
+<div class="container-fluid d-flex border">
+    <div class="m-2">
+        <h4>Дата и время первой отправки: {{ mailing.send_start }}</h4>
+        <br>
+        <h4>Дата и время окончания отправки: {{ mailing.send_stop }}</h4>
+        <br>
+        <h4>Статус рассылки: {{ mailing.status }}</h4>
+        <br>
+        <h4>Сообщение: {{ mailing.message }}</h4>
+        {% if clients %}
+        <h4>Клиенты:</h4>
+        <h5>{{ clients }}</h5>
+        {% endif %}
+
+    </div>
+</div>
+
+<a href="{% url 'edit_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+    Изменить
+</a>
+<a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">Назад</a>
+{% endblock %}
