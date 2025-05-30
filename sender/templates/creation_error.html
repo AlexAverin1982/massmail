@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Ошибка создания объекта{% endblock %}
+{% block content %}
+{% if error_code %}
+    {% if error_code == 1 %}
+        <h4>Категория с таким названием уже существует</h4>
+    {% elif error_code == 2 %}
+        <h4>Не указано наименование создаваемой категории</h4>
+    {% elif error_code == 3 %}
+        <h4>Не удалось создать категорию</h4>
+    {% elif error_code == 100 %}
+        <h4>Товар с таким наименованием уже существует в базе данных</h4>
+    {% elif error_code == 101 %}
+        <h4>Не указано наименование добавляемого товара</h4>
+    {% elif error_code == 102 %}
+        <h4>Не указана цена добавляемого товара</h4>
+    {% elif error_code == 103 %}
+        <h4>Не указана категория добавляемого товара</h4>
+    {% elif error_code == 104 %}
+        <h4>Указанная категория товаров не существует</h4>
+    {% elif error_code == 105 %}
+        <h4>Не удалось добавить товар</h4>
+    {% elif error_code == 106 %}
+        <h4>Указана нулевая цена</h4>
+    {% endif %}
+{% endif %}
+
+{% if error_message %}
+    <h6>{{ error_message }}</h6>
+{% endif %}
+
+<a href="/" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На главную</a>
+
+{% endblock %}

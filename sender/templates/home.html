@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}
+{% if title %}
+{{ title }}
+{% else %}MassMail
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="pricing-header px-2 pt-md-5 pb-md-4 mx-auto py-5 text-center">
+    <h1 class="display-4">MassMail Sender</h1>
+</div>
+
+<div class="container-fluid pb-2">
+
+    <div class="row row-cols-12 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xxl-5">
+        <div class="col">
+            {% for client in clients %}
+            <a href="{% url 'client_details' pk=client.id %}" type="button"
+               class="btn btn-lg btn-outline-primary mb-2 px-5 float-bottom"  style="width: 40rem">{{client.full_name}}
+            </a>
+
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block navigation %}
+<nav class="list-pages">
+    <ul class="list-inline">
+        {% for p in paginator.page_range %}
+        {% if page_obj.number == p %}
+        <li class="page-num page-num-selected">{{ p }}</li>
+        {% else %}
+        <li class="page-num">
+            <a href="?page={{ p }}">{{ p }}</a>
+        </li>
+        {% endif %}
+
+        {% endfor %}
+    </ul>
+</nav>
+{% endblock %}

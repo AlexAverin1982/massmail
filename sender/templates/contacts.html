@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}
+{% if title %}
+{{ title }}
+{% else %}Контакты
+{% endif %}
+{% endblock %}
+{% block content %}
+
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Контакты</h1>
+</div>
+
+<div class="container-fluid">
+    <!--<div class="container-fluid d-flex pb-5 text-center mt-5 mx-auto text-center">-->
+    <div class="row flex-nowrap d-flex justify-content-evenly pb-5">
+        {% if contacts %}
+        <div class="col-4 ms-2">
+            <div class="card box-shadow w-100 text-start">
+                <div class="card-body">
+                    <table class="table table-striped">
+                        {% if contacts.email %}
+                        <tr>
+                            <td class="w-50">E-mail</td>
+                            <td>{{ contacts.email }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if contacts.telegram %}
+                        <tr>
+                            <td class="w-25">Telegram</td>
+                            <td>{{ contacts.telegram }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if contacts.vk_group %}
+                        <tr>
+                            <td class="w-25">VK Group</td>
+                            <td>{{ contacts.vk_group }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
