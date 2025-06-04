@@ -12,13 +12,32 @@
 
 <div class="container-fluid pb-2">
 
-    <div class="row row-cols-12 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xxl-5">
-        <div class="col">
+    <div class="row row-cols-15 row-cols-sm-2 row-cols-md-3 row-cols-lg-12 row-cols-xxl-12">
+        <div class="col-5" style="background-color: #FFF">
+            <h4>Клиенты:</h4>
+            <br>
             {% for client in clients %}
             <a href="{% url 'client_details' pk=client.id %}" type="button"
                class="btn btn-lg btn-outline-primary mb-2 px-5 float-bottom"  style="width: 40rem">{{client.full_name}}
             </a>
-
+            {% endfor %}
+        </div>
+        <div class="col-5">
+            <h4>Сообщения:</h4>
+            <br>
+            {% for message in messages %}
+            <a href="{% url 'message_details' pk=message.id%}" type="button"
+               class="btn btn-lg btn-outline-primary mb-2 px-5 float-bottom"  style="width: 40rem">{{message.topic}}
+            </a>
+            {% endfor %}
+        </div>
+        <div class="col-5">
+            <h4>Рассылки:</h4>
+            <br>
+            {% for mailing in mailings %}
+            <a href="{% url 'mailing_details' pk=mailing.id %}" type="button"
+               class="btn btn-lg btn-outline-primary mb-2 px-5 float-bottom"  style="width: 40rem">Рассылка {{mailing.id}}
+            </a>
             {% endfor %}
         </div>
     </div>
