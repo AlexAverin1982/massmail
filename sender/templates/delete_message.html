@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %} Удаление сообщения '{{ message.topic|truncatechars:50 }}' от {{ message.updated_at }} {% endblock %}
+{% block content %}
+<div class="container-fluid d-flex border">
+    <form action="" method="post">{% csrf_token %}
+        <p>Вы уверены, что хотите удалить сообщение "{{ message.topic }}"?</p>
+        <input type="submit" value="Да, удалить"/>
+    </form>
+</div>
+<button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+        onClick="javascript:history.go(-1);">Назад
+</button>
+{% endblock %}

@@ -1,4 +1,10 @@
-from django.shortcuts import render, redirect
+from http.client import HTTPResponse
+
+from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+from django.db.transaction import commit
+from django.forms import CheckboxSelectMultiple, SelectMultiple
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.views import generic
 from django.urls import reverse_lazy, reverse
 from django.core.cache import cache
@@ -7,25 +13,21 @@ from django.utils.decorators import method_decorator
 
 from typing_extensions import Any
 
+from .models import Client, Message, Mailing
+from .forms import ClientCreateForm, MessageCreateForm, MailingCreateForm
 
-from .models import Client
-from .forms import ClientCreateForm
 
-class HomeView(generic.ListView):
-    model = Client
+class HomeView(generic.TemplateView):
     template_name = "home.html"
-    context_object_name = 'clients'
-    paginate_by = 10
 
-    def get_queryset(self):
-        
-        key_name = f"clients_queryset"
-        queryset = cache.get(key_name)
-        if not queryset:
-            queryset = Client.objects.all()
-            cache.set(key_name, queryset, 60 * 15)
-
-        return queryset
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'clients': Client.objects.all(),
+            'messages': Message.objects.all().order_by('-updated_at'),
+            'mailings': Mailing.objects.all(),
+        })
+        return context
 
 
 class ClientCreateView(generic.CreateView):
@@ -51,7 +53,8 @@ class ClientDetailView(generic.DetailView):
     template_name = "client_details.html"
     context_object_name = 'client'
 
-# LoginRequiredMixin, 
+
+# LoginRequiredMixin,
 class ClientUpdateView(generic.UpdateView):
     model = Client
     form_class = ClientCreateForm
@@ -78,4 +81,132 @@ class ClientDeleteView(generic.DeleteView):
         return redirect('home')
 
 
+#######################################################################################################################
 
+
+class MessageCreateView(generic.CreateView):
+    model = Message
+    form_class = MessageCreateForm
+    template_name = 'new_message.html'
+    context_object_name = 'message'
+
+    extra_context = {
+        'title': 'Новое сообщение',
+    }
+    success_url = reverse_lazy('home')
+
+
+class MessageDetailView(generic.DetailView):
+    model = Message
+    template_name = "message_details.html"
+    context_object_name = 'message'
+
+
+class MessageUpdateView(generic.UpdateView):
+    model = Message
+    form_class = MessageCreateForm
+    template_name = 'new_message.html'
+    # success_url = reverse_lazy('home')
+    extra_context = {
+        'title': 'Редактирование сообщения',
+        'message_editing_mode': True,
+    }
+
+    def get_success_url(self):
+        return reverse("message_details", kwargs=self.kwargs)
+
+
+class MessageDeleteView(generic.DeleteView):
+    model = Message
+    success_url = reverse_lazy("home")
+    context_object_name = 'message'
+    template_name = 'delete_message.html'
+
+    def post(self, request, *args, **kwargs) -> Any:
+        obj = Message.objects.get(id=kwargs['pk'])
+        super(MessageDeleteView, self).post(request, *args, **kwargs)
+        return redirect('home')
+
+
+#######################################################################################################################
+
+class MailingCreateView(generic.edit.CreateView):
+    model = Mailing
+    form_class = MailingCreateForm
+    template_name = 'new_mailing.html'
+    context_object_name = 'mailing'
+
+    success_url = reverse_lazy('home')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'possible_clients': Client.objects.all(),
+            'title': 'Новая рассылка',
+        })
+        return context
+
+    def post(self, request, *args, **kwargs) -> Any:
+        # request.POST = request.POST.copy()
+        # request.POST['clients'] = Client.objects.all()
+        data = MailingCreateForm(request.POST)
+        # print(f"clients: {request.POST.get('clients')}")
+
+        if data.is_valid():
+            print('here-------------------------------')
+            update = data.save(commit=False)
+            update.save()
+            data.save_m2m()
+            return HttpResponseRedirect(reverse('home'))
+        else:
+            kwargs['errors_data'] = self.get_form().errors
+            return HttpResponseRedirect(reverse('errors'))
+
+
+class MailingDetailView(generic.DetailView):
+    model = Mailing
+    template_name = "mailing_details.html"
+    context_object_name = 'mailing'
+
+
+class MailingUpdateView(generic.UpdateView):
+    model = Mailing
+    form_class = MailingCreateForm
+    template_name = 'new_mailing.html'
+
+    # extra_context = {
+    #     'title': 'Редактирование рассылки',
+    #     'mailing_editing_mode': True,
+    #     'possible_clients': Client.objects.all(),
+    # }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context.update({
+            'title': 'Редактирование рассылки',
+            'mailing_editing_mode': True,
+        })
+
+        # print(f"context: {context}")
+        print(f"context.mailing clients: {context['mailing'].clients.all()}")
+        return context
+
+    def get_success_url(self):
+        return reverse("mailing_details", kwargs=self.kwargs)
+
+
+class MailingDeleteView(generic.DeleteView):
+    model = Mailing
+    success_url = reverse_lazy("home")
+    context_object_name = 'mailing'
+    template_name = 'delete_mailing.html'
+
+    def post(self, request, *args, **kwargs) -> Any:
+        obj = Mailing.objects.get(id=kwargs['pk'])
+        super(MailingDeleteView, self).post(request, *args, **kwargs)
+        return redirect('home')
+
+
+class MailingErrorsView(generic.TemplateView):
+    template_name = 'errors.html'
