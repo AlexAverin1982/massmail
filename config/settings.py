@@ -51,7 +51,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "groupadmin_users",
+    "bootstrap_datepicker_plus",
     "sender",
+    "users",
 ]
 
 MIDDLEWARE = [
