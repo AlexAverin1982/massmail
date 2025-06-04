@@ -38,8 +38,8 @@ class Mailing(models.Model):
     """
     модель рассылки сообщения списку получателей
     """
-    send_start = models.DateTimeField(verbose_name="Дата и время первой отправки", blank=True)
-    send_stop = models.DateTimeField(verbose_name="Дата и время окончания отправки", blank=True)
+    send_start = models.DateTimeField(verbose_name="Дата и время первой отправки")
+    send_stop = models.DateTimeField(verbose_name="Дата и время окончания отправки")
     status = models.CharField(max_length=9, verbose_name="Тема", default='Создана')
 
     message = models.ForeignKey(
@@ -49,7 +49,7 @@ class Mailing(models.Model):
         verbose_name = "Сообщение",
     )
 
-    clients = models.ManyToManyField(Client)
+    clients = models.ManyToManyField(Client, verbose_name="Клиенты")
 
     class Meta:
         ordering = ["-id"]
