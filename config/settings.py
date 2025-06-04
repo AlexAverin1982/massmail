@@ -42,6 +42,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -50,9 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "groupadmin_users",
-    "bootstrap_datepier_plus",
     "sender",
-    "users",
 ]
 
 MIDDLEWARE = [
