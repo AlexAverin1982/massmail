@@ -24,5 +24,8 @@
 <a href="{% url 'delete_message' pk=message.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
     Удалить
 </a>
-<a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">Назад</a>
+<button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+        onClick="javascript:history.go(-1);">Назад
+</button>
+<a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На главную</a>
 {% endblock %}

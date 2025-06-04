@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %} рассылка {{ mailing.id }} {% endblock %}
 {% block content %}
-<div class="container-fluid d-flex border">
+<div class="container-fluid d-flex border" xmlns="http://www.w3.org/1999/html">
     <div class="m-2">
         <h4>Дата и время первой отправки: {{ mailing.send_start }}</h4>
         <br>
@@ -9,17 +9,26 @@
         <br>
         <h4>Статус рассылки: {{ mailing.status }}</h4>
         <br>
-        <h4>Сообщение: {{ mailing.message }}</h4>
-        {% if clients %}
+        <h4>Сообщение:
+            <a href="/message_details/{{mailing.message.id}}">{{ mailing.message }}</a></h4>
         <h4>Клиенты:</h4>
-        <h5>{{ clients }}</h5>
+        {% if mailing.clients.all %}
+        <ul>
+            {% for client in mailing.clients.all %}
+            <li>{{ client.full_name }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <h5>получатели не указаны</h5>
         {% endif %}
-
     </div>
 </div>
 
 <a href="{% url 'edit_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
     Изменить
+</a>
+<a href="{% url 'delete_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+    Удалить
 </a>
 <a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">Назад</a>
 {% endblock %}

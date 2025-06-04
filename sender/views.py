@@ -1,5 +1,9 @@
+from http.client import HTTPResponse
+
 from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+from django.db.transaction import commit
 from django.forms import CheckboxSelectMultiple, SelectMultiple
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.views import generic
 from django.urls import reverse_lazy, reverse
@@ -137,19 +141,26 @@ class MailingCreateView(generic.edit.CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'clients': Client.objects.all(),
+            'possible_clients': Client.objects.all(),
             'title': 'Новая рассылка',
         })
         return context
-    #
-    # def post(self, request, *args, **kwargs) -> Any:
-    #     form = self.get_form()
-    #     if form.is_valid():
-    #         profile = form.save(commit=False)
-    #         # profile.user = request.user
-    #         profile.save()
-    #
-    #     return super(MailingCreateView, self).post(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs) -> Any:
+        # request.POST = request.POST.copy()
+        # request.POST['clients'] = Client.objects.all()
+        data = MailingCreateForm(request.POST)
+        # print(f"clients: {request.POST.get('clients')}")
+
+        if data.is_valid():
+            print('here-------------------------------')
+            update = data.save(commit=False)
+            update.save()
+            data.save_m2m()
+            return HttpResponseRedirect(reverse('home'))
+        else:
+            kwargs['errors_data'] = self.get_form().errors
+            return HttpResponseRedirect(reverse('errors'))
 
 
 class MailingDetailView(generic.DetailView):
@@ -162,11 +173,40 @@ class MailingUpdateView(generic.UpdateView):
     model = Mailing
     form_class = MailingCreateForm
     template_name = 'new_mailing.html'
-    extra_context = {
-        'title': 'Редактирование рассылки',
-        'mailing_editing_mode': True,
-    }
+
+    # extra_context = {
+    #     'title': 'Редактирование рассылки',
+    #     'mailing_editing_mode': True,
+    #     'possible_clients': Client.objects.all(),
+    # }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context.update({
+            'title': 'Редактирование рассылки',
+            'mailing_editing_mode': True,
+        })
+
+        # print(f"context: {context}")
+        print(f"context.mailing clients: {context['mailing'].clients.all()}")
+        return context
 
     def get_success_url(self):
         return reverse("mailing_details", kwargs=self.kwargs)
 
+
+class MailingDeleteView(generic.DeleteView):
+    model = Mailing
+    success_url = reverse_lazy("home")
+    context_object_name = 'mailing'
+    template_name = 'delete_mailing.html'
+
+    def post(self, request, *args, **kwargs) -> Any:
+        obj = Mailing.objects.get(id=kwargs['pk'])
+        super(MailingDeleteView, self).post(request, *args, **kwargs)
+        return redirect('home')
+
+
+class MailingErrorsView(generic.TemplateView):
+    template_name = 'errors.html'
