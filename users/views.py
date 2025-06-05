@@ -129,5 +129,3 @@ class EmailConfirmationFailedView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Ваш электронный адрес не активирован'
         return context
-=======
-from django.shortcuts import render
