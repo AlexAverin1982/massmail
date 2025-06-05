@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "groupadmin_users",
-    "bootstrap_datepier_plus",
+    "bootstrap_datepicker_plus",
     "sender",
     "users",
 ]

@@ -7,6 +7,7 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls, name="adminka"),
     path("", include("sender.urls"), name='home'),
+    path("auth/", include("users.urls")),
 ]
 
 if settings.DEBUG:
