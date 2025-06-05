@@ -25,7 +25,10 @@
 </div>
 <div>
 <a href="{% url 'force_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
-    Отправить принудительно
+    Отправить сейчас
+</a>
+<a href="{% url 'mailing_attempts' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+    Журнал попыток
 </a>
 </div>
 <div>

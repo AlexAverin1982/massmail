@@ -1,20 +1,18 @@
 # from http.client import HTTPResponse
-from django.core.mail import send_mail
 # from bootstrap_datepicker_plus.widgets import DateTimePickerInput
 # from django.db.transaction import commit
 # from django.forms import CheckboxSelectMultiple, SelectMultiple
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy, reverse
 # from django.core.cache import cache
 # from django.views.decorators.cache import cache_page
 # from django.utils.decorators import method_decorator
-from django.conf import settings
 
 from typing_extensions import Any
 
-from .models import Client, Message, Mailing
+from .models import Client, Message, Mailing, Attempt
 from .forms import ClientCreateForm, MessageCreateForm, MailingCreateForm
 
 
@@ -218,15 +216,37 @@ class ForceSendMailingView(generic.DetailView):
     def get(self, request, *args, **kwargs):
         print('force mailing to be sent manually...')
         mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-        message = mailing.message
-
-        print(f"Тема: {message.topic}")
-        print(f"Сообщение: {message.text}")
-        recipients = [client.email for client in mailing.clients.all()]
-        # for client in mailing.clients.all():
-        #     print(f"sending message '{message}' to client {client}")
-
-        send_mail(message.topic, message.text, settings.ADMIN_MAIL, recipients)
-
+        mailing.send()
         return redirect('home')
+
+
+
+class MailingAttemptsListView(generic.ListView):
+    model = Attempt
+    template_name = "mailing_attempts.html"
+    context_object_name = 'items'
+    paginate_by = 50
+
+    # extra_context = {
+    #     'categories': Category.objects.all().order_by('name'),
+    # }
+
+    def get_queryset(self):
+        # queryset = cache.get('products_queryset')
+        # if not queryset:
+        #     user = self.request.user
+        #     if is_moder(user) or is_superuser(user):
+        #         products = self.model.objects.all()
+        #     else:
+        #         products = self.model.objects.filter(is_published=True)
+        #     queryset = products.order_by("-created_at")
+        #     cache.set('products_queryset', queryset, 60 * 15)
+        pk = self.request['pk']
+        if pk:
+            attempts = self.model.objects.filter(mailing=pk)
+            queryset = attempts.order_by("-created_at")
+        else:
+            raise Http404(f"Записи попыток для рассылки {self} не найдены")
+
+        return queryset
 
