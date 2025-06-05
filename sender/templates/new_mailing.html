@@ -33,7 +33,7 @@
                 <li>
                     <input
                             {% for cl in mailing.clients.all %}
-                            {% if cl.full_name== choice %}checked='checked'
+                            {% if cl.full_name == choice %}checked='checked'
                             {% endif %}
                             {% endfor %}
                             name="clients" class="custom-checkbox-class" type="checkbox" value="{{ pk }}"
@@ -46,7 +46,7 @@
             </ul>
         </div>
         <div class="d-flex container-fluid justify-content-end">
-            <button type="submit" class="btn btn-primary col-5 mt-6 p-3">
+            <button type="submit" class="btn btn-primary col-5  mx-2 px-5 m-3 ">
                 {% if mailing_editing_mode %}
                 Изменить
                 {% else %}

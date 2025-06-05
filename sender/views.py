@@ -1,15 +1,16 @@
-from http.client import HTTPResponse
-
-from bootstrap_datepicker_plus.widgets import DateTimePickerInput
-from django.db.transaction import commit
-from django.forms import CheckboxSelectMultiple, SelectMultiple
+# from http.client import HTTPResponse
+from django.core.mail import send_mail
+# from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+# from django.db.transaction import commit
+# from django.forms import CheckboxSelectMultiple, SelectMultiple
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy, reverse
-from django.core.cache import cache
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
+# from django.core.cache import cache
+# from django.views.decorators.cache import cache_page
+# from django.utils.decorators import method_decorator
+from django.conf import settings
 
 from typing_extensions import Any
 
@@ -210,3 +211,22 @@ class MailingDeleteView(generic.DeleteView):
 
 class MailingErrorsView(generic.TemplateView):
     template_name = 'errors.html'
+
+class ForceSendMailingView(generic.DetailView):
+    template_name = 'force_send_mailing.html'
+
+    def get(self, request, *args, **kwargs):
+        print('force mailing to be sent manually...')
+        mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+        message = mailing.message
+
+        print(f"Тема: {message.topic}")
+        print(f"Сообщение: {message.text}")
+        recipients = [client.email for client in mailing.clients.all()]
+        # for client in mailing.clients.all():
+        #     print(f"sending message '{message}' to client {client}")
+
+        send_mail(message.topic, message.text, settings.ADMIN_MAIL, recipients)
+
+        return redirect('home')
+
