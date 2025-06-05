@@ -109,11 +109,20 @@ DATABASES = {
     }
 }
 
+# e-mail settings
+EMAIL_HOST = os.getenv('SERVER_MAIL_HOST')
+EMAIL_PORT = os.getenv('SERVER_MAIL_PORT')
+EMAIL_HOST_USER = os.getenv('SERVER_MAIL_USER')
+EMAIL_HOST_PASSWORD = os.getenv('SERVER_MAIL_PASSWORD')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+ADMIN_MAIL = os.getenv('ADMIN_MAIL')
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
-AUTH_USER_MODEL = 'users.CustomUser'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
