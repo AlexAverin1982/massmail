@@ -11,7 +11,7 @@
         <br>
         <h4>Сообщение:
             <a href="/message_details/{{mailing.message.id}}">{{ mailing.message }}</a></h4>
-        <h4>Клиенты:</h4>
+        <h4>Получатели:</h4>
         {% if mailing.clients.all %}
         <ul>
             {% for client in mailing.clients.all %}
@@ -23,12 +23,21 @@
         {% endif %}
     </div>
 </div>
-
+<div>
+<a href="{% url 'force_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+    Отправить сейчас
+</a>
+<a href="{% url 'mailing_attempts' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+    Журнал попыток
+</a>
+</div>
+<div>
 <a href="{% url 'edit_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
     Изменить
 </a>
 <a href="{% url 'delete_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
     Удалить
 </a>
-<a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">Назад</a>
+<a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На домашнюю</a>
+</div>
 {% endblock %}

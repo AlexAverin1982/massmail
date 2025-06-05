@@ -1,19 +1,18 @@
-from http.client import HTTPResponse
-
-from bootstrap_datepicker_plus.widgets import DateTimePickerInput
-from django.db.transaction import commit
-from django.forms import CheckboxSelectMultiple, SelectMultiple
-from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+# from http.client import HTTPResponse
+# from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+# from django.db.transaction import commit
+# from django.forms import CheckboxSelectMultiple, SelectMultiple
+from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy, reverse
-from django.core.cache import cache
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
+# from django.core.cache import cache
+# from django.views.decorators.cache import cache_page
+# from django.utils.decorators import method_decorator
 
 from typing_extensions import Any
 
-from .models import Client, Message, Mailing
+from .models import Client, Message, Mailing, Attempt
 from .forms import ClientCreateForm, MessageCreateForm, MailingCreateForm
 
 
@@ -210,3 +209,64 @@ class MailingDeleteView(generic.DeleteView):
 
 class MailingErrorsView(generic.TemplateView):
     template_name = 'errors.html'
+
+class ForceSendMailingView(generic.DetailView):
+    template_name = 'force_send_mailing.html'
+
+    def get(self, request, *args, **kwargs):
+        print('force mailing to be sent manually...')
+        mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+        mailing.send()
+        return redirect('home')
+
+
+
+class MailingAttemptsListView(generic.TemplateView):
+    # model = Attempt
+    template_name = "mailing_attempts.html"
+    # context_object_name = 'items'
+    # paginate_by = 50
+
+    # extra_context = {
+    #     'categories': Category.objects.all().order_by('name'),
+    # }
+
+    # def get_queryset(self, **kwargs):
+        # queryset = super().get_queryset(**kwargs)
+        # print(f"queryset : {queryset}")
+        # queryset = cache.get('products_queryset')
+        # if not queryset:
+        #     user = self.request.user
+        #     if is_moder(user) or is_superuser(user):
+        #         products = self.model.objects.all()
+        #     else:
+        #         products = self.model.objects.filter(is_published=True)
+        #     queryset = products.order_by("-created_at")
+        #     cache.set('products_queryset', queryset, 60 * 15)
+        # mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+        # print(mailing)
+        # print(f"kwargs.pk: {kwargs.get('pk')}")
+        # pk = self.request['pk']
+        # if pk:
+        #     attempts = self.model.objects.filter(mailing=pk)
+        #     queryset = attempts.order_by("-created_at")
+        # else:
+        #     raise Http404(f"Записи попыток для рассылки {self} не найдены")
+        #
+        # return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk = self.kwargs.get('pk')
+        mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+        attempts = Attempt.objects.all()      #.filter(mailing=pk).order_by("-date_time")
+        print(f"mailing: {mailing}")
+        # print(f"attempts: {attempts}")
+
+        # print(f"kwargs: {kwargs}")
+        context.update({
+            'mailing': mailing,
+            'attempts': attempts,
+        })
+        return context
+

@@ -16,6 +16,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+AUTH_USER_MODEL = 'users.CustomUser'
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 CACHE_ENABLED = True
@@ -39,7 +42,6 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -48,8 +50,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "groupadmin_users",
-    "bootstrap_datepicker_plus",
+    "bootstrap_datepier_plus",
     "sender",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -106,9 +109,20 @@ DATABASES = {
     }
 }
 
+# e-mail settings
+EMAIL_HOST = os.getenv('SERVER_MAIL_HOST')
+EMAIL_PORT = os.getenv('SERVER_MAIL_PORT')
+EMAIL_HOST_USER = os.getenv('SERVER_MAIL_USER')
+EMAIL_HOST_PASSWORD = os.getenv('SERVER_MAIL_PASSWORD')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+ADMIN_MAIL = os.getenv('ADMIN_MAIL')
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
