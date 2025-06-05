@@ -221,17 +221,19 @@ class ForceSendMailingView(generic.DetailView):
 
 
 
-class MailingAttemptsListView(generic.ListView):
-    model = Attempt
+class MailingAttemptsListView(generic.TemplateView):
+    # model = Attempt
     template_name = "mailing_attempts.html"
-    context_object_name = 'items'
-    paginate_by = 50
+    # context_object_name = 'items'
+    # paginate_by = 50
 
     # extra_context = {
     #     'categories': Category.objects.all().order_by('name'),
     # }
 
-    def get_queryset(self):
+    # def get_queryset(self, **kwargs):
+        # queryset = super().get_queryset(**kwargs)
+        # print(f"queryset : {queryset}")
         # queryset = cache.get('products_queryset')
         # if not queryset:
         #     user = self.request.user
@@ -241,12 +243,30 @@ class MailingAttemptsListView(generic.ListView):
         #         products = self.model.objects.filter(is_published=True)
         #     queryset = products.order_by("-created_at")
         #     cache.set('products_queryset', queryset, 60 * 15)
-        pk = self.request['pk']
-        if pk:
-            attempts = self.model.objects.filter(mailing=pk)
-            queryset = attempts.order_by("-created_at")
-        else:
-            raise Http404(f"Записи попыток для рассылки {self} не найдены")
+        # mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+        # print(mailing)
+        # print(f"kwargs.pk: {kwargs.get('pk')}")
+        # pk = self.request['pk']
+        # if pk:
+        #     attempts = self.model.objects.filter(mailing=pk)
+        #     queryset = attempts.order_by("-created_at")
+        # else:
+        #     raise Http404(f"Записи попыток для рассылки {self} не найдены")
+        #
+        # return queryset
 
-        return queryset
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk = self.kwargs.get('pk')
+        mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+        attempts = Attempt.objects.all()      #.filter(mailing=pk).order_by("-date_time")
+        print(f"mailing: {mailing}")
+        # print(f"attempts: {attempts}")
+
+        # print(f"kwargs: {kwargs}")
+        context.update({
+            'mailing': mailing,
+            'attempts': attempts,
+        })
+        return context
 
