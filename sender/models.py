@@ -59,7 +59,8 @@ class Mailing(models.Model):
 
 
     def send(self):
-        attempt = Attempt(mailing=self)
+        attempt = Attempt()
+        attempt.mailing = self
         message = self.message
 
         recipients = [client.email for client in self.clients.all()]
@@ -96,10 +97,6 @@ class Attempt(models.Model):
         related_name="attempts",
         verbose_name="Рассылка",
     )
-
-    def __init__(self, mailing: Mailing):
-        super().__init__()
-        self.mailing = mailing
 
 
 

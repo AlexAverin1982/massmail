@@ -49,8 +49,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "groupadmin_users",
-    "bootstrap_datepicker_plus",
+    "groupadmin_users",
+    "bootstrap_datepier_plus",
     "sender",
     "users",
 ]
