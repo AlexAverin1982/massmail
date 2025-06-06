@@ -34,9 +34,10 @@ class RegisterView(FormView):
         return context
 
     def form_valid(self, form):
-        user = form.save(commit=False)
-        user.is_active = False
-        user.save()
+        user = form.save()
+        # user = form.save(commit=False)
+        # user.is_active = False
+        # user.save()
         # # Функционал для отправки письма и генерации токена
         # token = default_token_generator.make_token(user)
         # uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -50,7 +51,7 @@ class RegisterView(FormView):
         #     [user.email],
         #     fail_silently=False,
         # )
-        return redirect('email_confirmation_sent')
+        return redirect(reverse_lazy('user_profile', kwargs={'pk': user.id}))
 
     def send_welcome_email(self, user_email):
         subject = 'Добро пожаловать в наш сервис'

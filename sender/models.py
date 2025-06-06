@@ -1,9 +1,12 @@
 from django.db import models
-from django.db.models.functions import Now
+# from django.db.models.functions import Now
 from django_currentuser.db.models import CurrentUserField
 from django.conf import settings
 from django.core.mail import send_mail
 from smtplib import SMTPException
+
+from users.models import CustomUser
+
 
 class Client(models.Model):
     """
@@ -13,11 +16,16 @@ class Client(models.Model):
     full_name = models.CharField(max_length=150, verbose_name="Ф.И.О.")
     comment = models.TextField(max_length=1000, verbose_name="Комментарий", blank=True)
 
+    owner = models.ForeignKey(CustomUser, editable=False, on_delete=models.SET_NULL, related_name='Клиенты',
+                              verbose_name='Владелец', blank=True, null=True)
+
+
     class Meta:
         ordering = ["full_name"]
 
     def __str__(self):
         return self.full_name
+
 
 
 class Message(models.Model):
@@ -28,6 +36,9 @@ class Message(models.Model):
     text = models.TextField(max_length=5000, verbose_name="Сообщение")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
+    owner = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='Сообщения',
+                              verbose_name='Владелец')
+
 
     class Meta:
         ordering = ["updated_at", "topic"]
@@ -42,7 +53,7 @@ class Mailing(models.Model):
     """
     send_start = models.DateTimeField(verbose_name="Дата и время первой отправки")
     send_stop = models.DateTimeField(verbose_name="Дата и время окончания отправки")
-    status = models.CharField(max_length=9, verbose_name="Тема", default='Создана')
+    status = models.CharField(max_length=9, verbose_name="Статус", default='Создана')
 
     message = models.ForeignKey(
         Message,
@@ -51,12 +62,13 @@ class Mailing(models.Model):
         verbose_name="Сообщение",
     )
 
-    clients = models.ManyToManyField(Client, verbose_name="Клиенты")
+    clients = models.ManyToManyField(Client, verbose_name="Получатели")
+    owner = models.ForeignKey(CustomUser, editable=False, on_delete=models.SET_NULL, related_name='Рассылки',
+                              verbose_name='Владелец', blank=True, null=True)
+
 
     class Meta:
         ordering = ["-id"]
-
-
 
     def send(self):
         attempt = Attempt()

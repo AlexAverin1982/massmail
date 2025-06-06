@@ -2,10 +2,12 @@
 # from bootstrap_datepicker_plus.widgets import DateTimePickerInput
 # from django.db.transaction import commit
 # from django.forms import CheckboxSelectMultiple, SelectMultiple
+import django.utils.functional
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy, reverse
+from django.contrib.auth.models import AnonymousUser
 # from django.core.cache import cache
 # from django.views.decorators.cache import cache_page
 # from django.utils.decorators import method_decorator
@@ -21,11 +23,12 @@ class HomeView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'clients': Client.objects.all(),
-            'messages': Message.objects.all().order_by('-updated_at'),
-            'mailings': Mailing.objects.all(),
-        })
+        if not isinstance(self.request.user, AnonymousUser):
+            context.update({
+                'clients': Client.objects.all().filter(owner=self.request.user),
+                'messages': Message.objects.all().filter(owner=self.request.user),
+                'mailings': Mailing.objects.all().filter(owner=self.request.user),
+            })
         return context
 
 
@@ -42,8 +45,30 @@ class ClientCreateView(generic.CreateView):
     success_url = reverse_lazy('home')
 
     # def form_valid(self, form):
+    #     if not isinstance(self.model.owner, django.utils.functional.SimpleLazyObject):
+    #         self.model.owner = self.request.user
     #     form.save()
     #     return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs) -> Any:
+        request.POST = request.POST.copy()
+        request.POST['owner'] = request.user
+        data = ClientCreateForm(request.POST)
+
+        if data.is_valid():
+            data.instance.owner = request.user
+            update = data.save(commit=False)
+            update.owner = request.user
+            update.save()
+            data.save_m2m()
+            return HttpResponseRedirect(reverse_lazy('home'))
+        else:
+            # print(f"request.POST: {request.POST}")
+            # print(f"data: {data}")
+            # errors = self.get_form().errors
+            # print(f"errors: {errors}")
+            # kwargs['errors_data'] = self.get_form().errors
+            return HttpResponseRedirect(reverse('errors'))
 
 
 # @method_decorator(cache_page(60 * 15), name='dispatch')
@@ -94,6 +119,12 @@ class MessageCreateView(generic.CreateView):
     }
     success_url = reverse_lazy('home')
 
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.owner = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
 
 class MessageDetailView(generic.DetailView):
     model = Message
@@ -134,31 +165,43 @@ class MailingCreateView(generic.edit.CreateView):
     form_class = MailingCreateForm
     template_name = 'new_mailing.html'
     context_object_name = 'mailing'
-
     success_url = reverse_lazy('home')
+
+    def get_form_kwargs(self):
+        kwargs = super(MailingCreateView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        print(f"kwargs['user']: {kwargs['user']}")
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # print(f"user: {self.request.user}")
         context.update({
-            'possible_clients': Client.objects.all(),
+            'possible_clients': Client.objects.filter(owner=self.request.user),
             'title': 'Новая рассылка',
         })
         return context
 
     def post(self, request, *args, **kwargs) -> Any:
-        # request.POST = request.POST.copy()
-        # request.POST['clients'] = Client.objects.all()
+        request.POST = request.POST.copy()
+        request.POST['owner'] = request.user
         data = MailingCreateForm(request.POST)
+
         # print(f"clients: {request.POST.get('clients')}")
 
         if data.is_valid():
-            print('here-------------------------------')
+            data.instance.owner = request.user
             update = data.save(commit=False)
+            update.owner = request.user
             update.save()
             data.save_m2m()
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(reverse_lazy('home'))
         else:
-            kwargs['errors_data'] = self.get_form().errors
+            # print(f"request.POST: {request.POST}")
+            # print(f"data: {data}")
+            # errors = self.get_form().errors
+            # print(f"errors: {errors}")
+            # kwargs['errors_data'] = self.get_form().errors
             return HttpResponseRedirect(reverse('errors'))
 
 
@@ -210,6 +253,7 @@ class MailingDeleteView(generic.DeleteView):
 class MailingErrorsView(generic.TemplateView):
     template_name = 'errors.html'
 
+
 class ForceSendMailingView(generic.DetailView):
     template_name = 'force_send_mailing.html'
 
@@ -220,10 +264,10 @@ class ForceSendMailingView(generic.DetailView):
         return redirect('home')
 
 
-
 class MailingAttemptsListView(generic.TemplateView):
     # model = Attempt
     template_name = "mailing_attempts.html"
+
     # context_object_name = 'items'
     # paginate_by = 50
 
@@ -232,34 +276,34 @@ class MailingAttemptsListView(generic.TemplateView):
     # }
 
     # def get_queryset(self, **kwargs):
-        # queryset = super().get_queryset(**kwargs)
-        # print(f"queryset : {queryset}")
-        # queryset = cache.get('products_queryset')
-        # if not queryset:
-        #     user = self.request.user
-        #     if is_moder(user) or is_superuser(user):
-        #         products = self.model.objects.all()
-        #     else:
-        #         products = self.model.objects.filter(is_published=True)
-        #     queryset = products.order_by("-created_at")
-        #     cache.set('products_queryset', queryset, 60 * 15)
-        # mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-        # print(mailing)
-        # print(f"kwargs.pk: {kwargs.get('pk')}")
-        # pk = self.request['pk']
-        # if pk:
-        #     attempts = self.model.objects.filter(mailing=pk)
-        #     queryset = attempts.order_by("-created_at")
-        # else:
-        #     raise Http404(f"Записи попыток для рассылки {self} не найдены")
-        #
-        # return queryset
+    # queryset = super().get_queryset(**kwargs)
+    # print(f"queryset : {queryset}")
+    # queryset = cache.get('products_queryset')
+    # if not queryset:
+    #     user = self.request.user
+    #     if is_moder(user) or is_superuser(user):
+    #         products = self.model.objects.all()
+    #     else:
+    #         products = self.model.objects.filter(is_published=True)
+    #     queryset = products.order_by("-created_at")
+    #     cache.set('products_queryset', queryset, 60 * 15)
+    # mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+    # print(mailing)
+    # print(f"kwargs.pk: {kwargs.get('pk')}")
+    # pk = self.request['pk']
+    # if pk:
+    #     attempts = self.model.objects.filter(mailing=pk)
+    #     queryset = attempts.order_by("-created_at")
+    # else:
+    #     raise Http404(f"Записи попыток для рассылки {self} не найдены")
+    #
+    # return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs.get('pk')
         mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-        attempts = Attempt.objects.all()      #.filter(mailing=pk).order_by("-date_time")
+        attempts = Attempt.objects.all()  # .filter(mailing=pk).order_by("-date_time")
         print(f"mailing: {mailing}")
         # print(f"attempts: {attempts}")
 
@@ -269,4 +313,3 @@ class MailingAttemptsListView(generic.TemplateView):
             'attempts': attempts,
         })
         return context
-

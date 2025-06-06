@@ -24,10 +24,16 @@
             {{ form.message.label_tag }}
             {{ form.message }}
         </div>
+        <div class="fieldWrapper">
+            {{ form.status.errors }}
+            {{ form.status.label_tag }}
+            {{ form.status }}
+        </div>
 
         <div class="fieldWrapper">
             {{ form.clients.errors }}
             {{ form.clients.label_tag }}
+
             <ul class="nobullet">
                 {% for pk, choice in form.clients.field.widget.choices %}
                 <li>
