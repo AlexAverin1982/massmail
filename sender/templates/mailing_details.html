@@ -3,16 +3,17 @@
 {% block content %}
 <div class="container-fluid d-flex border" xmlns="http://www.w3.org/1999/html">
     <div class="m-2">
+        <h4>id: {{ mailing.id }}</h4>
         <h4>Дата и время первой отправки: {{ mailing.send_start }}</h4>
         <br>
         <h4>Дата и время окончания отправки: {{ mailing.send_stop }}</h4>
         <br>
         <h4>Статус рассылки: {{ mailing.status }}</h4>
         <br>
-        <h4>owner: {{ mailing.owner }}</h4>
-        <br>
         <h4>Сообщение:
-            <a href="/message_details/{{mailing.message.id}}">{{ mailing.message }}</a></h4>
+            <a href="/message_details/{{mailing.message.id}}">{{ mailing.message }}</a>
+        </h4>
+        <br>
         <h4>Получатели:</h4>
         {% if mailing.clients.all %}
         <ul>
@@ -26,20 +27,31 @@
     </div>
 </div>
 <div>
-<a href="{% url 'force_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
-    Отправить сейчас
-</a>
-<a href="{% url 'mailing_attempts' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
-    Журнал попыток
-</a>
+    {% if mailing.clients.all %}
+    <a href="{% url 'force_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+        Отправить сейчас
+    </a>
+    {% endif %}
+    <a href="{% url 'mailing_attempts' pk=mailing.id %}"
+       class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+        Журнал попыток
+    </a>
+    <a href="#" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+        Расписание
+    </a>
 </div>
 <div>
-<a href="{% url 'edit_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
-    Изменить
-</a>
-<a href="{% url 'delete_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
-    Удалить
-</a>
-<a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На домашнюю</a>
+    <a href="{% url 'edit_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+        Изменить
+    </a>
+    <a href="{% url 'delete_mailing' pk=mailing.id %}"
+       class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+        Удалить
+    </a>
+    <a href="{% url 'copy_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+        Копировать
+    </a>
+
+    <a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На домашнюю</a>
 </div>
 {% endblock %}

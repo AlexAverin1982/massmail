@@ -28,6 +28,10 @@ class HomeView(generic.TemplateView):
                 'clients': Client.objects.all().filter(owner=self.request.user),
                 'messages': Message.objects.all().filter(owner=self.request.user),
                 'mailings': Mailing.objects.all().filter(owner=self.request.user),
+                'active_mailings_count':
+                    Mailing.objects.all().filter(owner=self.request.user).filter(status='Запущена').count(),
+                'clients_count':
+                    Client.objects.all().filter(owner=self.request.user).count()
             })
         return context
 
@@ -44,11 +48,10 @@ class ClientCreateView(generic.CreateView):
     }
     success_url = reverse_lazy('home')
 
-    # def form_valid(self, form):
-    #     if not isinstance(self.model.owner, django.utils.functional.SimpleLazyObject):
-    #         self.model.owner = self.request.user
-    #     form.save()
-    #     return super().form_valid(form)
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        self.model.owner = self.request.user
+        return super().form_valid(form)
 
     def post(self, request, *args, **kwargs) -> Any:
         request.POST = request.POST.copy()
@@ -121,6 +124,7 @@ class MessageCreateView(generic.CreateView):
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
+        self.model.owner = self.request.user
         self.object.owner = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
@@ -172,6 +176,11 @@ class MailingCreateView(generic.edit.CreateView):
         kwargs['user'] = self.request.user
         print(f"kwargs['user']: {kwargs['user']}")
         return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        self.model.owner = self.request.user
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -313,3 +322,14 @@ class MailingAttemptsListView(generic.TemplateView):
             'attempts': attempts,
         })
         return context
+
+
+class CopyMailingView(generic.DetailView):
+    # template_name = 'force_send_mailing.html'
+
+    def get(self, request, *args, **kwargs):
+        print('making copy of an existing one...')
+        mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+        mailing.id = None
+        mailing.save()
+        return redirect(reverse_lazy('mailing_details', kwargs={'pk': mailing.id}))

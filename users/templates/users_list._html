@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+<form method="post" class="form-floating" enctype="multipart/form-data">
+    {% csrf_token %}
+        <div class="container-fluid d-flex border">
+            <div class="fieldWrapper">
+                {{ form.users.errors }}
+                {{ form.users.label_tag }}
+
+                <ul class="nobullet">
+                    {% for user in users %}
+                    <li>
+                        <input
+                                {% if user.is_active %}checked='checked'
+                                {% endif %}
+                                name="user" class="custom-checkbox-class" type="checkbox" value="{{ user.id }}"
+                                id="id_user_{{forloop.counter0}}">
+                        <label class="form-check-label" for="id_user_{{forloop.counter0}}">
+                            {{ user.username }}
+                        </label>
+                    </li>
+
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+</form>
+<button type="submit" class="btn btn-primary col-5  mx-2 px-5 m-3 ">
+    Сохранить
+</button>
+
+<button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+        onClick="javascript:history.go(-1);">Назад
+</button>
+{% endblock %}

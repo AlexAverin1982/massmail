@@ -21,6 +21,28 @@
                         <li><a class="dropdown-item" href="{% url 'new_mailing' %}">рассылку</a></li>
                     </ul>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link ms-2" href="#">Клиенты</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link ms-2" href="#">Сообщения</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link ms-2" href="#">Рассылки</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link ms-2" href="#">Попытки</a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link ms-2" href="#">Отчеты</a>
+                </li>
+
+                {% if perms.users.can_block_user %}
+                <li class="nav-item dropdown">
+                    users-list
+                </li>
+                {% endif %}
                 {% endif %}
             </ul>
             {% if user.is_authenticated %}
@@ -33,9 +55,9 @@
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{% url 'user_profile' pk=user.id%}">Профиль</a></li>
 
-<!--                        {% if user.is_admin %}-->
-<!--                        <li><a class="dropdown-item" href="/admin/">Админка</a></li>-->
-<!--                        {% endif %}-->
+                        {% if user.is_superuser %}
+                        <li><a class="dropdown-item" href="/admin/">Админка</a></li>
+                        {% endif %}
                         <li>
                             <a class="dropdown-item" href="#">
                                 <form method="post" action="{% url 'logout' %}" style="display: inline;">

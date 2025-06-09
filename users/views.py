@@ -1,7 +1,8 @@
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.urls import reverse
 from django.views.generic.edit import FormView
-from django.views.generic import DetailView, DeleteView, UpdateView, TemplateView, View
+from django.views.generic import DetailView, DeleteView, UpdateView, TemplateView, View, ListView
 from django.contrib.auth.views import LoginView, LogoutView
 from .forms import CustomUserCreationForm, CustomUserUpdateForm, LoginForm
 from .models import CustomUser
@@ -14,6 +15,7 @@ from django.utils.encoding import force_bytes
 # from django.contrib.sites.models import Site
 from django.shortcuts import redirect
 from django.contrib.auth import get_user_model
+from typing_extensions import Any
 
 User = get_user_model()
 
@@ -130,3 +132,4 @@ class EmailConfirmationFailedView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Ваш электронный адрес не активирован'
         return context
+

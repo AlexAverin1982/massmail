@@ -1,6 +1,5 @@
 from django.db import models
 # from django.db.models.functions import Now
-from django_currentuser.db.models import CurrentUserField
 from django.conf import settings
 from django.core.mail import send_mail
 from smtplib import SMTPException
@@ -19,13 +18,13 @@ class Client(models.Model):
     owner = models.ForeignKey(CustomUser, editable=False, on_delete=models.SET_NULL, related_name='Клиенты',
                               verbose_name='Владелец', blank=True, null=True)
 
-
     class Meta:
+        verbose_name = "Клиент"
+        verbose_name_plural = "клиенты"
         ordering = ["full_name"]
 
     def __str__(self):
         return self.full_name
-
 
 
 class Message(models.Model):
@@ -39,8 +38,9 @@ class Message(models.Model):
     owner = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL, related_name='Сообщения',
                               verbose_name='Владелец')
 
-
     class Meta:
+        verbose_name = "Сообщение"
+        verbose_name_plural = "сообщения"
         ordering = ["updated_at", "topic"]
 
     def __str__(self):
@@ -66,9 +66,11 @@ class Mailing(models.Model):
     owner = models.ForeignKey(CustomUser, editable=False, on_delete=models.SET_NULL, related_name='Рассылки',
                               verbose_name='Владелец', blank=True, null=True)
 
-
     class Meta:
+        verbose_name = "Рассылка"
+        verbose_name_plural = "рассылки"
         ordering = ["-id"]
+        permissions = [('can_disable_mailing', 'Can enable and disable mailing'), ]
 
     def send(self):
         attempt = Attempt()
@@ -110,5 +112,7 @@ class Attempt(models.Model):
         verbose_name="Рассылка",
     )
 
-
-
+    class Meta:
+        verbose_name = "Попытка рассылки"
+        verbose_name_plural = "попытки рассылки"
+        ordering = ["-id"]
