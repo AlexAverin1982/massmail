@@ -21,3 +21,10 @@ class CustomUser(AbstractUser):
         verbose_name_plural = "пользователи"
         ordering = ["last_name", "first_name"]
         permissions = [('can_block_user', 'Can block and unblock users'), ]
+
+
+class UsersControl(models.Model):
+    users = models.ManyToManyField(CustomUser, verbose_name="Пользователи, которым можно заходить в приложение")
+
+    class Meta:
+        verbose_name = "Управление пользователями"

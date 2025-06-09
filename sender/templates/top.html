@@ -40,7 +40,7 @@
 
                 {% if perms.users.can_block_user %}
                 <li class="nav-item dropdown">
-                    users-list
+                    <a class="nav-link ms-2" href="{% url 'control_users' pk=1 %}">Пользователи</a>
                 </li>
                 {% endif %}
                 {% endif %}

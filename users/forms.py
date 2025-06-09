@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 from .mixins import FormControlMixin
-from .models import CustomUser
+from .models import CustomUser, UsersControl
 
 
 class LoginForm(FormControlMixin, forms.Form):
@@ -49,3 +49,19 @@ class CustomUserUpdateForm(FormControlMixin, UserChangeForm):
     #         raise forms.ValidationError('Номер телефона должен содержать только цифры')
     #     return phone_number
 
+
+class UsersControlForm(FormControlMixin, forms.ModelForm):
+    users = forms.ModelMultipleChoiceField(queryset=CustomUser.objects.all())
+
+    class Meta:
+        model = UsersControl
+        fields = '__all__'  # no use, form is customized, but without it server won't start
+
+
+class UsersControlInitForm(FormControlMixin, forms.ModelForm):
+    users = forms.ModelMultipleChoiceField(queryset=CustomUser.objects.all(),
+                                           label="Пользователи, которым можно заходить в приложение")
+
+    class Meta:
+        model = UsersControl
+        fields = '__all__'  # no use, form is customized, but without it server won't start

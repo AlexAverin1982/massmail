@@ -1,9 +1,9 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView, LoginView
-from .views import (RegisterView, UserProfileView, UserDeleteView, 
+from .views import (RegisterView, UserProfileView, UserDeleteView,
                     UserUpdateView, UserLoginView, UserConfirmEmailView,
                     EmailConfirmationSentView, EmailConfirmedView,
-                    EmailConfirmationFailedView)
+                    EmailConfirmationFailedView, UsersControlView, InitUsersControlView)
 
 urlpatterns = [
     path('login/', LoginView.as_view(template_name='login.html', next_page='home'), name='login'),
@@ -14,6 +14,8 @@ urlpatterns = [
     path("profile/<int:pk>/", UserProfileView.as_view(), name="user_profile"),
     path('edit_user/<int:pk>/', UserUpdateView.as_view(), name='edit_user'),
     path("delete_user/<int:pk>/", UserDeleteView.as_view(), name="delete_user"),
+    path("control_users/<int:pk>/", UsersControlView.as_view(), name="control_users"),
+    # path("init_users_control/", InitUsersControlView.as_view(), name="init_users_control"),
 #     path('email_confirmation_sent/', EmailConfirmationSentView.as_view(), name='email_confirmation_sent'),
 #     path('confirm_email/<str:uidb64>/<str:token>/', UserConfirmEmailView.as_view(), name='confirm_email'),
 #     path('email_confirmed/', EmailConfirmedView.as_view(), name='email_confirmed'),
