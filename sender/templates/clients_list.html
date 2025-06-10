@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Клиенты{% endblock %}
+{% block content %}
+
+<a href="{% url 'new_client' %}" class="btn btn-lg btn-outline-success mx-2 px-5 m-3 float-bottom">
+    Добавить
+</a>
+
+{% if clients %}
+
+<p>
+    Сортировать по...
+<ul>
+    {% for client in clients %}
+
+    <li><a href="{% url 'client_details' pk=client.id %}">
+        <h5>{{ client.email }} : {{ client.full_name }}</h5>
+    </a>
+    </li>
+
+    {% endfor %}
+</ul>
+
+{% else %}
+<h5>Пока клиентов нет...</h5>
+{% endif %}
+<button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+        onClick="javascript:history.go(-1);">Назад
+</button>
+
+
+{% endblock %}
+
+{% block navigation %}
+{% if clients %}
+<nav class="list-pages">
+    <ul>
+        {% for p in paginator.page_range %}
+        {% if page_obj.number == p %}
+        <li class="page-num page-num-selected">Стр. {{ p }}</li>
+        {% else %}
+        <li class="page-num">
+            <a href="?page={{ p }}">Стр. {{ p }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

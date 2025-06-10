@@ -22,31 +22,59 @@
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link ms-2" href="#">Клиенты</a>
+                    <a class="nav-link ms-2" href="{% url 'clients_list' %}">Клиенты</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link ms-2" href="#">Сообщения</a>
+                    <a class="nav-link ms-2" href="{% url 'messages_list' %}">Сообщения</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link ms-2" href="#">Рассылки</a>
+                    <a class="nav-link ms-2" href="{% url 'mailing_list' %}">Рассылки</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link ms-2" href="#">Попытки</a>
+                    <a class="nav-link ms-2" href="{% url 'attempts_list' %}">Попытки</a>
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link ms-2" href="#">Отчеты</a>
+                    <a class="nav-link ms-2" href="{% url 'statistics' %}">Статистика</a>
                 </li>
-
-                {% if perms.users.can_block_user %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link ms-2" href="{% url 'control_users' pk=1 %}">Пользователи</a>
-                </li>
-                {% endif %}
                 {% endif %}
             </ul>
             {% if user.is_authenticated %}
+
             <ul class="navbar-nav">
+                {% if user.is_superuser %}
+                <li class="dropdown">
+                    <a class="btn btn-outline-success dropdown-toggle p-2" href="#" role="button" id="dropdown_manage"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Управление
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <li><a class="dropdown-item" href="{% url 'all_clients_list' %}">клиентами</a></li>
+                        <li><a class="dropdown-item" href="{% url 'all_mailing_list' %}">рассылками</a></li>
+                        {% if perms.users.can_block_user %}
+                        <li><a class="dropdown-item" href="{% url 'control_users' pk=1 %}">пользователями</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+                {% else %}
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'Менеджеры' %}
+                <li class="dropdown">
+                    <a class="btn btn-outline-success dropdown-toggle p-2" href="#" role="button" id="dropdown_manage2"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Управление
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <li><a class="dropdown-item" href="{% url 'all_clients_list' %}">клиентами</a></li>
+                        <li><a class="dropdown-item" href="{% url 'all_mailing_list' %}">рассылками</a></li>
+                        {% if perms.users.can_block_user %}
+                        <li><a class="dropdown-item" href="{% url 'control_users' pk=1 %}">пользователями</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"
                        data-bs-auto-close="outside">

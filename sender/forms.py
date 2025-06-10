@@ -34,6 +34,7 @@ class MailingCreateForm(FormControlMixin, forms.ModelForm):
             'send_stop': DateTimePickerInput(),
             'status': forms.Select(attrs={'id': 'status_select'}, choices=STATUS_CHOICES),
             'owner': forms.Select(attrs={'id': 'owner_select'}),
+            'enabled': forms.CheckboxInput(attrs={'class': 'custom-checkbox-class'})
             # 'clients': CheckboxSelectMultiple(queryset=Client.objects.all().filter(owner=self.request.user))
         }
 
@@ -74,6 +75,10 @@ class MailingCreateForm(FormControlMixin, forms.ModelForm):
         else:
             self.user = kwargs.pop('user', None)
         super(MailingCreateForm, self).__init__(*args, **kwargs)
+
+        self.fields['enabled'].widget.attrs.update({
+            'class': 'custom-checkbox-class'
+        })
 
         if self.user:
             self.fields['clients'].queryset = Client.objects.all().filter(owner=self.user)

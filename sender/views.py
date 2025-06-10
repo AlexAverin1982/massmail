@@ -8,6 +8,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import AnonymousUser
+from django.db.models import Count
 # from django.core.cache import cache
 # from django.views.decorators.cache import cache_page
 # from django.utils.decorators import method_decorator
@@ -214,12 +215,6 @@ class MailingCreateView(generic.edit.CreateView):
             return HttpResponseRedirect(reverse('errors'))
 
 
-class MailingDetailView(generic.DetailView):
-    model = Mailing
-    template_name = "mailing_details.html"
-    context_object_name = 'mailing'
-
-
 class MailingUpdateView(generic.UpdateView):
     model = Mailing
     form_class = MailingCreateForm
@@ -240,11 +235,35 @@ class MailingUpdateView(generic.UpdateView):
         })
 
         # print(f"context: {context}")
-        print(f"context.mailing clients: {context['mailing'].clients.all()}")
+        # print(f"context.mailing clients: {context['mailing'].clients.all()}")
         return context
 
     def get_success_url(self):
         return reverse("mailing_details", kwargs=self.kwargs)
+
+
+class MailingDetailView(generic.DetailView):
+    model = Mailing
+    template_name = "mailing_details.html"
+    context_object_name = 'mailing'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context.update({
+            'owner': self.model.owner,
+            'user': self.request.user,
+        })
+
+        return context
+
+    def get(self, request, **kwargs):
+        if kwargs.get('disable'):
+            mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+            mailing.enabled = not mailing.enabled
+            mailing.save()
+            return redirect(request.META['HTTP_REFERER'])
+        return super().get(self, request, **kwargs)
 
 
 class MailingDeleteView(generic.DeleteView):
@@ -270,7 +289,7 @@ class ForceSendMailingView(generic.DetailView):
         print('force mailing to be sent manually...')
         mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
         mailing.send()
-        return redirect('home')
+        return redirect(request.META['HTTP_REFERER'])
 
 
 class MailingAttemptsListView(generic.TemplateView):
@@ -333,3 +352,82 @@ class CopyMailingView(generic.DetailView):
         mailing.id = None
         mailing.save()
         return redirect(reverse_lazy('mailing_details', kwargs={'pk': mailing.id}))
+
+
+class MailingListView(generic.ListView):
+    model = Mailing
+    template_name = "mailing_list.html"
+    context_object_name = 'mailings'
+    paginate_by = 50
+
+    def get_queryset(self):
+        if self.kwargs.get('show_all', False):
+            return Mailing.objects.all().order_by('id')
+        else:
+            return Mailing.objects.all().filter(owner=self.request.user).order_by('id')
+
+
+class MessageListView(generic.ListView):
+    model = Message
+    template_name = "messages_list.html"
+    context_object_name = 'messages'
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Message.objects.all().filter(owner=self.request.user).order_by('id')
+
+
+class ClientListView(generic.ListView):
+    model = Client
+    template_name = "clients_list.html"
+    context_object_name = 'clients'
+    paginate_by = 50
+
+    def get_queryset(self):
+        if self.kwargs.get('show_all', False):
+            return Client.objects.all().order_by('id')
+        else:
+            return Client.objects.filter(owner=self.request.user).order_by('id')
+
+
+class AttemptListView(generic.ListView):
+    model = Attempt
+    template_name = "attempts_list.html"
+    context_object_name = 'attempts'
+    paginate_by = 50
+
+    def get_queryset(self):
+        for att in Attempt.objects.all():
+            if att.owner is None:
+                # print(f"att.mailing: {att.mailing.owner}")
+                # mailing = Mailing.objects.get(att.mailing)
+                att.owner = att.mailing.owner
+                att.save()
+        return Attempt.objects.filter(owner=self.request.user)  # .filter(owner=self.request.user).order_by('owner')
+
+
+class StatisticsView(generic.TemplateView):
+    template_name = 'statistics.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if not isinstance(self.request.user, AnonymousUser):
+            mailings_list = []
+            mailings = Mailing.objects.filter(owner=self.request.user)
+            for m in mailings:
+                m_dict = {'id': m.id, 'topic': m.message.topic, 'message_id': m.message.id,
+                          'total_attempts': Attempt.objects.filter(mailing=m.id).count(),
+                          'successful_attempts': Attempt.objects.filter(mailing=m.id).filter(is_successful=True).count(),}
+                if m_dict.get('total_attempts'):
+                    mailings_list.append(m_dict)
+
+            context.update({
+                'total_attempts_count':
+                    Attempt.objects.all().filter(owner=self.request.user).count(),
+                'successful_attempts_count':
+                    Attempt.objects.all().filter(owner=self.request.user).filter(is_successful=True).count(),
+                'mailings_list': mailings_list,
+                # 'clients_count':
+                #     Client.objects.all().filter(owner=self.request.user).count()
+            })
+        return context

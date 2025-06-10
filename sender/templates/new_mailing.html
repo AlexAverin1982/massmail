@@ -29,7 +29,13 @@
             {{ form.status.label_tag }}
             {{ form.status }}
         </div>
-
+        {% if perms.sender.can_disable_mailing %}
+        <div class="fieldWrapper">
+            {{ form.enabled.errors }}
+            {{ form.enabled.label_tag }}
+            {{ form.enabled }}
+        </div>
+        {% endif %}
         <div class="fieldWrapper">
             {{ form.clients.errors }}
             {{ form.clients.label_tag }}

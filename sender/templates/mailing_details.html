@@ -4,6 +4,7 @@
 <div class="container-fluid d-flex border" xmlns="http://www.w3.org/1999/html">
     <div class="m-2">
         <h4>id: {{ mailing.id }}</h4>
+        <h4>Владелец: {{ mailing.owner }}</h4>
         <h4>Дата и время первой отправки: {{ mailing.send_start }}</h4>
         <br>
         <h4>Дата и время окончания отправки: {{ mailing.send_stop }}</h4>
@@ -26,12 +27,14 @@
         {% endif %}
     </div>
 </div>
+{% if not mailing.enabled %}
+<h4 style="color: red">Рассылка заблокирована</h4>
+{% endif %}
 <div>
-    {% if mailing.clients.all %}
+    {% if user == mailing.owner and mailing.enabled %}
     <a href="{% url 'force_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
         Отправить сейчас
     </a>
-    {% endif %}
     <a href="{% url 'mailing_attempts' pk=mailing.id %}"
        class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
         Журнал попыток
@@ -39,8 +42,15 @@
     <a href="#" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
         Расписание
     </a>
+    {% else %}
+    <a href="#" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+        Расписание
+    </a>
+    {% endif %}
 </div>
+
 <div>
+    {% if user == mailing.owner %}
     <a href="{% url 'edit_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
         Изменить
     </a>
@@ -51,7 +61,23 @@
     <a href="{% url 'copy_mailing' pk=mailing.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
         Копировать
     </a>
+    {% else %}
+    <a href="{% url 'disable_mailing' pk=mailing.id %}"
+       class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+        {% if mailing.enabled %}
+        Заблокировать
+        {% else %}
+        Разблокировать
+        {% endif %}
+    </a>
+    {% endif %}
+</div>
+    <button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+            onClick="javascript:history.go(-1);">Назад
+    </button>
 
     <a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На домашнюю</a>
+<div>
+
 </div>
 {% endblock %}

@@ -66,6 +66,8 @@ class Mailing(models.Model):
     owner = models.ForeignKey(CustomUser, editable=False, on_delete=models.SET_NULL, related_name='Рассылки',
                               verbose_name='Владелец', blank=True, null=True)
 
+    enabled = models.BooleanField(default=True, verbose_name='Активна')
+
     class Meta:
         verbose_name = "Рассылка"
         verbose_name_plural = "рассылки"
@@ -75,6 +77,7 @@ class Mailing(models.Model):
     def send(self):
         attempt = Attempt()
         attempt.mailing = self
+        attempt.owner = self.owner
         message = self.message
 
         recipients = [client.email for client in self.clients.all()]
@@ -104,6 +107,9 @@ class Attempt(models.Model):
     date_time = models.DateTimeField(verbose_name="Дата и время попытки рассылки", auto_now_add=True)
     is_successful = models.BooleanField(verbose_name="Статус попытки", default=False)
     server_response = models.CharField(max_length=1000, verbose_name="Ответ сервера", blank=True)
+
+    owner = models.ForeignKey(CustomUser, editable=False, on_delete=models.SET_NULL, related_name='Попытки_рассылок+',
+                              verbose_name='Владелец', blank=True, null=True)
 
     mailing = models.ForeignKey(
         Mailing,

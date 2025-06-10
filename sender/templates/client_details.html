@@ -23,12 +23,13 @@
         </div>
     </div>
 </div>
-
+{% if user == client.owner %}
 <a href="{% url 'edit_client' pk=client.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
     Изменить
 </a>
 <a href="{% url 'delete_client' pk=client.id %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
     Удалить
 </a>
+{% endif %}
 <a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">Назад</a>
 {% endblock %}

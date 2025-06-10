@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Попытки отправки{% endblock %}
+{% block content %}
+{% if attempts %}
+<p>
+    Сортировать по...
+<ul>
+    {% for attempt in attempts %}
+
+    <li>
+        <a href="{% url 'mailing_attempts' pk=attempt.id %}">
+            {% if attempt.is_successful %}
+            <h5 style="color: green">{{ attempt.date_time }} попытка рассылки {{attempt.mailing.id}}
+                '{{ attempt.mailing.message.topic }}' прошла успешно; владелец: {{attempt.owner}}</h5>
+            {% else %}
+            <h5 style="color: red">{{ attempt.date_time }} попытка рассылки {{attempt.mailing.id}}
+                '{{ attempt.mailing.message.topic }}' вызвала ошибку: {{ attempt.status }}; владелец:
+                {{attempt.owner}}</h5>
+            {% endif %}
+        </a>
+    </li>
+
+    {% endfor %}
+</ul>
+</p>
+{% else %}
+<h5>Рассылка не выполнялась ни разу.</h5>
+{% endif %}
+
+<button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+        onClick="javascript:history.go(-1);">Назад
+</button>
+
+
+{% endblock %}
+
+{% block navigation %}
+{% if attempts %}
+<nav class="list-pages">
+    <ul>
+        {% for p in paginator.page_range %}
+        {% if page_obj.number == p %}
+        <li class="page-num page-num-selected">Стр. {{ p }}</li>
+        {% else %}
+        <li class="page-num">
+            <a href="?page={{ p }}">Стр. {{ p }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
