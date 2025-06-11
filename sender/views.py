@@ -263,7 +263,7 @@ class MailingUpdateView(generic.UpdateView):
         return reverse("mailing_details", kwargs=self.kwargs)
 
 
-@method_decorator(cache_page(60 * 20), name='dispatch')
+# @method_decorator(cache_page(60 * 20), name='dispatch')
 class MailingDetailView(generic.DetailView):
     model = Mailing
     template_name = "mailing_details.html"
@@ -433,7 +433,6 @@ class StatisticsView(generic.TemplateView):
                               is_successful=True).count(), }
                 if m_dict.get('total_attempts'):
                     mailings_list.append(m_dict)
-
 
             context.update({
                 'total_attempts_count':

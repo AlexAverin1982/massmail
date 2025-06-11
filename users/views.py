@@ -49,6 +49,7 @@ class UserLoginView(LoginView):
             messages.error(request, 'Логин или пароль неправильные')
             return redirect(reverse('home'))
 
+
 """
 предыдущая версия, работающая без подтверждения по емайл
 class RegisterView(FormView):
@@ -87,6 +88,7 @@ class RegisterView(FormView):
         message = 'Спасибо, что зарегистрировались в нашем сервисе!'
         send_mail(subject, message, settings.EMAIL_HOST_USER, [user_email])
 """
+
 
 class RegisterView(UserIsNotAuthenticated, CreateView):
     """
