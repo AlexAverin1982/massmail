@@ -2,16 +2,15 @@
 # from bootstrap_datepicker_plus.widgets import DateTimePickerInput
 # from django.db.transaction import commit
 # from django.forms import CheckboxSelectMultiple, SelectMultiple
-import django.utils.functional
+# import django.utils.functional
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import AnonymousUser
-from django.db.models import Count
-# from django.core.cache import cache
-# from django.views.decorators.cache import cache_page
-# from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 
 from typing_extensions import Any
 
@@ -76,14 +75,13 @@ class ClientCreateView(generic.CreateView):
             return HttpResponseRedirect(reverse('errors'))
 
 
-# @method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ClientDetailView(generic.DetailView):
     model = Client
     template_name = "client_details.html"
     context_object_name = 'client'
 
 
-# LoginRequiredMixin,
 class ClientUpdateView(generic.UpdateView):
     model = Client
     form_class = ClientCreateForm
@@ -152,6 +150,7 @@ class MessageCreateView(generic.CreateView):
             return HttpResponseRedirect(reverse('errors'))
 
 
+@method_decorator(cache_page(60 * 20), name='dispatch')
 class MessageDetailView(generic.DetailView):
     model = Message
     template_name = "message_details.html"
@@ -216,7 +215,7 @@ class MailingCreateView(generic.edit.CreateView):
     def post(self, request, *args, **kwargs) -> Any:
         request.POST = request.POST.copy()
         request.POST['owner'] = request.user
-        request.POST['enabled'] = True          # почему default=True не работает - ненаю
+        request.POST['enabled'] = True  # почему default=True не работает - ненаю
         form_data = MailingCreateForm(request.POST)
 
         # print(f"clients: {request.POST.get('clients')}")
@@ -264,6 +263,7 @@ class MailingUpdateView(generic.UpdateView):
         return reverse("mailing_details", kwargs=self.kwargs)
 
 
+@method_decorator(cache_page(60 * 20), name='dispatch')
 class MailingDetailView(generic.DetailView):
     model = Mailing
     template_name = "mailing_details.html"
@@ -309,51 +309,26 @@ class ForceSendMailingView(generic.DetailView):
 
     def get(self, request, *args, **kwargs):
         print('force mailing to be sent manually...')
-        mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-        mailing.send()
+        try:
+            mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+            mailing.send()
+        except KeyError as e:
+            return reverse_lazy('errors', kwargs={'error_message': e.__str__()})
+
         return redirect(request.META['HTTP_REFERER'])
 
 
+# @method_decorator(cache_page(60 * 20), name='dispatch')
 class MailingAttemptsListView(generic.TemplateView):
     # model = Attempt
-    template_name = "mailing_attempts.html"
-
-    # context_object_name = 'items'
-    # paginate_by = 50
-
-    # extra_context = {
-    #     'categories': Category.objects.all().order_by('name'),
-    # }
-
-    # def get_queryset(self, **kwargs):
-    # queryset = super().get_queryset(**kwargs)
-    # print(f"queryset : {queryset}")
-    # queryset = cache.get('products_queryset')
-    # if not queryset:
-    #     user = self.request.user
-    #     if is_moder(user) or is_superuser(user):
-    #         products = self.model.objects.all()
-    #     else:
-    #         products = self.model.objects.filter(is_published=True)
-    #     queryset = products.order_by("-created_at")
-    #     cache.set('products_queryset', queryset, 60 * 15)
-    # mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-    # print(mailing)
-    # print(f"kwargs.pk: {kwargs.get('pk')}")
-    # pk = self.request['pk']
-    # if pk:
-    #     attempts = self.model.objects.filter(mailing=pk)
-    #     queryset = attempts.order_by("-created_at")
-    # else:
-    #     raise Http404(f"Записи попыток для рассылки {self} не найдены")
-    #
-    # return queryset
+    # template_name = "mailing_attempts.html"
+    template_name = "attempts_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs.get('pk')
         mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-        attempts = Attempt.objects.all()  # .filter(mailing=pk).order_by("-date_time")
+        attempts = Attempt.objects.filter(mailing=pk)  # .filter(mailing=pk).order_by("-date_time")
         print(f"mailing: {mailing}")
         # print(f"attempts: {attempts}")
 
@@ -384,9 +359,16 @@ class MailingListView(generic.ListView):
 
     def get_queryset(self):
         if self.kwargs.get('show_all', False):
-            return Mailing.objects.all().order_by('id')
+            queryset = cache.get('all_mailing_list_queryset')
+            if not queryset:
+                queryset = Mailing.objects.all().order_by('id')
+                cache.set('all_mailing_list_queryset', queryset, 60 * 2)
         else:
-            return Mailing.objects.all().filter(owner=self.request.user).order_by('id')
+            queryset = cache.get('mailing_list_queryset')
+            if not queryset:
+                queryset = Mailing.objects.all().filter(owner=self.request.user).order_by('id')
+                cache.set('mailing_list_queryset', queryset, 60 * 2)
+        return queryset
 
 
 class MessageListView(generic.ListView):
@@ -396,7 +378,11 @@ class MessageListView(generic.ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return Message.objects.all().filter(owner=self.request.user).order_by('id')
+        queryset = cache.get('messages_list_queryset')
+        if not queryset:
+            queryset = Message.objects.all().filter(owner=self.request.user).order_by('id')
+            cache.set('messages_list_queryset', queryset, 60 * 2)
+        return queryset
 
 
 class ClientListView(generic.ListView):
@@ -421,11 +407,14 @@ class AttemptListView(generic.ListView):
     def get_queryset(self):
         for att in Attempt.objects.all():
             if att.owner is None:
-                # print(f"att.mailing: {att.mailing.owner}")
-                # mailing = Mailing.objects.get(att.mailing)
                 att.owner = att.mailing.owner
                 att.save()
-        return Attempt.objects.filter(owner=self.request.user)  # .filter(owner=self.request.user).order_by('owner')
+
+        queryset = cache.get('mailing_attempts_list_queryset')
+        if not queryset:
+            queryset = Attempt.objects.filter(owner=self.request.user)
+            cache.set('mailing_attempts_list_queryset', queryset, 60 * 2)
+        return queryset
 
 
 class StatisticsView(generic.TemplateView):
@@ -434,6 +423,7 @@ class StatisticsView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if not isinstance(self.request.user, AnonymousUser):
+
             mailings_list = []
             mailings = Mailing.objects.filter(owner=self.request.user)
             for m in mailings:
@@ -443,6 +433,7 @@ class StatisticsView(generic.TemplateView):
                               is_successful=True).count(), }
                 if m_dict.get('total_attempts'):
                     mailings_list.append(m_dict)
+
 
             context.update({
                 'total_attempts_count':

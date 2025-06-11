@@ -92,6 +92,14 @@ class Mailing(models.Model):
             if hasattr(e, 'smtp_code'):
                 attempt.server_response = e.smtp_code + ' : ' + e.strerror
             print(attempt.server_response)
+        except TimeoutError as e:
+            print("--------------- failure -------------------------")
+            print(f"type of exception: {type(e)}")
+
+            attempt.server_response = str(e)
+            if hasattr(e, 'smtp_code'):
+                attempt.server_response = e.smtp_code + ' : ' + e.strerror
+            print(attempt.server_response)
         else:
             attempt.is_successful = True
         finally:
