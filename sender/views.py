@@ -131,6 +131,26 @@ class MessageCreateView(generic.CreateView):
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
+    def post(self, request, *args, **kwargs) -> Any:
+        request.POST = request.POST.copy()
+        request.POST['owner'] = request.user
+        data = MessageCreateForm(request.POST)  # ФОРМА А НЕ ВИД!!!
+        print(f"request.user: {request.user}")
+        # эта песня посвещена борьбе за мир!
+        if data.is_valid():
+            data.instance.owner = request.user
+            update = data.save(commit=False)
+            update.owner = request.user
+            update.save()
+            return HttpResponseRedirect(reverse_lazy('home'))
+        else:
+            print(f"request.POST: {request.POST}")
+            print(f"data: {data}")
+            errors = self.get_form().errors
+            print(f"errors: {errors}")
+            # kwargs['errors_data'] = self.get_form().errors
+            return HttpResponseRedirect(reverse('errors'))
+
 
 class MessageDetailView(generic.DetailView):
     model = Message
@@ -196,23 +216,24 @@ class MailingCreateView(generic.edit.CreateView):
     def post(self, request, *args, **kwargs) -> Any:
         request.POST = request.POST.copy()
         request.POST['owner'] = request.user
-        data = MailingCreateForm(request.POST)
+        request.POST['enabled'] = True          # почему default=True не работает - ненаю
+        form_data = MailingCreateForm(request.POST)
 
         # print(f"clients: {request.POST.get('clients')}")
 
-        if data.is_valid():
-            data.instance.owner = request.user
-            update = data.save(commit=False)
-            update.owner = request.user
-            update.save()
-            data.save_m2m()
-            return HttpResponseRedirect(reverse_lazy('home'))
+        if form_data.is_valid():
+            form_data.instance.owner = request.user
+            mailing = form_data.save(commit=False)
+            mailing.owner = request.user
+            mailing.save()
+            form_data.save_m2m()
+            return redirect(reverse_lazy('mailing_details', kwargs={'pk': mailing.id}))
         else:
-            # print(f"request.POST: {request.POST}")
-            # print(f"data: {data}")
-            # errors = self.get_form().errors
-            # print(f"errors: {errors}")
-            # kwargs['errors_data'] = self.get_form().errors
+            print(f"request.POST: {request.POST}")
+            print(f"mailing: {form_data}")
+            errors = self.get_form().errors
+            print(f"errors: {errors}")
+            kwargs['errors_data'] = self.get_form().errors
             return HttpResponseRedirect(reverse('errors'))
 
 
@@ -418,7 +439,8 @@ class StatisticsView(generic.TemplateView):
             for m in mailings:
                 m_dict = {'id': m.id, 'topic': m.message.topic, 'message_id': m.message.id,
                           'total_attempts': Attempt.objects.filter(mailing=m.id).count(),
-                          'successful_attempts': Attempt.objects.filter(mailing=m.id).filter(is_successful=True).count(),}
+                          'successful_attempts': Attempt.objects.filter(mailing=m.id).filter(
+                              is_successful=True).count(), }
                 if m_dict.get('total_attempts'):
                     mailings_list.append(m_dict)
 
