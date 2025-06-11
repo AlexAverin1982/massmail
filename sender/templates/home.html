@@ -14,7 +14,9 @@
 
     <div class="row row-cols-15 row-cols-sm-2 row-cols-md-3 row-cols-lg-12 row-cols-xxl-12">
         <div class="col-5" style="background-color: #FFF">
+            {% if clients %}
             <h4>Клиенты:</h4>
+            {% endif %}
             <br>
             {% for client in clients %}
             <a href="{% url 'client_details' pk=client.id %}" type="button"
@@ -23,16 +25,20 @@
             {% endfor %}
         </div>
         <div class="col-5">
+            {% if messages_to_send %}
             <h4>Сообщения:</h4>
+            {% endif %}
             <br>
-            {% for message in messages %}
-            <a href="{% url 'message_details' pk=message.id%}" type="button"
+            {% for message in messages_to_send %}
+            <a href="{% url 'message_details' pk=message.id %}" type="button"
                class="btn btn-lg btn-outline-primary mb-2 px-5 float-bottom" style="width: 40rem">{{message.topic}}
             </a>
             {% endfor %}
         </div>
         <div class="col-5">
+            {% if mailings %}
             <h4>Рассылки:</h4>
+            {% endif %}
             <br>
             {% for mailing in mailings %}
             {% if mailing.status == "Создана" %}

@@ -1,31 +1,56 @@
 from django.http import HttpResponseRedirect
-from django.urls import reverse_lazy
+# from django.urls import reverse_lazy
 from django.urls import reverse
 from django.views.generic.edit import FormView, CreateView
 from django.views.generic import DetailView, DeleteView, UpdateView, TemplateView, View, ListView
 from django.contrib.auth.views import LoginView, LogoutView
-from .forms import CustomUserCreationForm, CustomUserUpdateForm, LoginForm, UsersControlForm, UsersControlInitForm
-from .models import CustomUser, UsersControl
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-# from django.contrib.sites.models import Site
-from django.shortcuts import redirect, get_object_or_404
+from django.contrib.sites.models import Site
+from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth import get_user_model
 from typing_extensions import Any
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.urls import reverse_lazy
+from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth.forms import AuthenticationForm
+from .forms import UserForgotPasswordForm, UserSetNewPasswordForm
+from .forms import CustomUserCreationForm, CustomUserUpdateForm, LoginForm, UsersControlForm, UsersControlInitForm
+from .mixins import UserIsNotAuthenticated
+from .models import CustomUser, UsersControl
 
 User = get_user_model()
 
 
 class UserLoginView(LoginView):
-    form_class = LoginForm
+    form_class = AuthenticationForm
     template_name = 'login.html'
     next_page = 'home'
 
+    def get(self, request, **kwargs):
+        form = AuthenticationForm()
+        return render(request, 'login.html', {'form': form})
 
+    def post(self, request, **kwargs):
+        form = AuthenticationForm(request.POST)
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user:
+            if user.is_active:
+                login(request, user)
+                return redirect(reverse('home'))
+        else:
+            messages.error(request, 'Логин или пароль неправильные')
+            return redirect(reverse('home'))
+
+"""
+предыдущая версия, работающая без подтверждения по емайл
 class RegisterView(FormView):
     template_name = 'register.html'
     form_class = CustomUserCreationForm
@@ -61,6 +86,38 @@ class RegisterView(FormView):
         subject = 'Добро пожаловать в наш сервис'
         message = 'Спасибо, что зарегистрировались в нашем сервисе!'
         send_mail(subject, message, settings.EMAIL_HOST_USER, [user_email])
+"""
+
+class RegisterView(UserIsNotAuthenticated, CreateView):
+    """
+     Представление регистрации на сайте с формой регистрации
+     """
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy('home')
+    template_name = 'registration/user_register.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Регистрация на сайте'
+        return context
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.is_active = False
+        user.save()
+        # Функционал для отправки письма и генерации токена
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        activation_url = reverse_lazy('confirm_email', kwargs={'uidb64': uid, 'token': token})
+        current_site = Site.objects.get_current().domain
+        send_mail(
+            'Подтвердите свой электронный адрес',
+            f'Пожалуйста, перейдите по следующей ссылке, чтобы подтвердить свой адрес электронной почты: http://{current_site}{activation_url}',
+            settings.ADMIN_MAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        return redirect('email_confirmation_sent')
 
 
 class UserProfileView(DetailView):
@@ -214,3 +271,32 @@ class InitUsersControlView(CreateView):
             # print(f"errors: {errors}")
             # kwargs['errors_data'] = self.get_form().errors
             return HttpResponseRedirect(reverse('errors'))
+
+
+class UserForgotPasswordView(SuccessMessageMixin, PasswordResetView):
+    """
+    Представление по сбросу пароля по почте
+    """
+    template_name = 'users/password_reset.html'
+    email_template_name = 'users/password_reset_email.html'
+    subject_template_name = 'users/password_reset_subject'
+    success_message = "We've emailed you instructions for setting your password, " \
+                      "if an account exists with the email you entered. You should receive them shortly." \
+                      " If you don't receive an email, " \
+                      "please make sure you've entered the address you registered with, and check your spam folder."
+    success_url = reverse_lazy('home')
+
+
+class UserPasswordResetConfirmView(SuccessMessageMixin, PasswordResetConfirmView):
+    """
+    Представление установки нового пароля
+    """
+    form_class = UserSetNewPasswordForm
+    template_name = 'user_password_set_new.html'
+    success_url = reverse_lazy('home')
+    success_message = 'Пароль успешно изменен. Можете авторизоваться на сайте.'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Установить новый пароль'
+        return context

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    'django.contrib.sites',
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
@@ -70,7 +71,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -110,6 +111,7 @@ DATABASES = {
 }
 
 # e-mail settings
+DEFAULT_FROM_EMAIL = os.getenv('SERVER_MAIL_USER')
 EMAIL_HOST = os.getenv('SERVER_MAIL_HOST')
 EMAIL_PORT = os.getenv('SERVER_MAIL_PORT')
 EMAIL_HOST_USER = os.getenv('SERVER_MAIL_USER')
@@ -156,7 +158,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-
+SITE_ID = 1
 STATIC_URL = "static/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"

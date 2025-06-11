@@ -27,7 +27,7 @@ class HomeView(generic.TemplateView):
         if not isinstance(self.request.user, AnonymousUser):
             context.update({
                 'clients': Client.objects.all().filter(owner=self.request.user),
-                'messages': Message.objects.all().filter(owner=self.request.user),
+                'messages_to_send': Message.objects.all().filter(owner=self.request.user),
                 'mailings': Mailing.objects.all().filter(owner=self.request.user),
                 'active_mailings_count':
                     Mailing.objects.all().filter(owner=self.request.user).filter(status='Запущена').count(),
@@ -58,6 +58,7 @@ class ClientCreateView(generic.CreateView):
         request.POST = request.POST.copy()
         request.POST['owner'] = request.user
         data = ClientCreateForm(request.POST)
+        print(f"request.user: {request.user}")
 
         if data.is_valid():
             data.instance.owner = request.user
@@ -67,10 +68,10 @@ class ClientCreateView(generic.CreateView):
             data.save_m2m()
             return HttpResponseRedirect(reverse_lazy('home'))
         else:
-            # print(f"request.POST: {request.POST}")
-            # print(f"data: {data}")
-            # errors = self.get_form().errors
-            # print(f"errors: {errors}")
+            print(f"request.POST: {request.POST}")
+            print(f"data: {data}")
+            errors = self.get_form().errors
+            print(f"errors: {errors}")
             # kwargs['errors_data'] = self.get_form().errors
             return HttpResponseRedirect(reverse('errors'))
 

@@ -11,7 +11,7 @@ class Client(models.Model):
     """
     модель получателя рассылки (клиента)
     """
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     full_name = models.CharField(max_length=150, verbose_name="Ф.И.О.")
     comment = models.TextField(max_length=1000, verbose_name="Комментарий", blank=True)
 
