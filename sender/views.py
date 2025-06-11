@@ -3,7 +3,7 @@
 # from django.db.transaction import commit
 # from django.forms import CheckboxSelectMultiple, SelectMultiple
 # import django.utils.functional
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy, reverse
@@ -28,6 +28,8 @@ class HomeView(generic.TemplateView):
                 'clients': Client.objects.all().filter(owner=self.request.user),
                 'messages_to_send': Message.objects.all().filter(owner=self.request.user),
                 'mailings': Mailing.objects.all().filter(owner=self.request.user),
+                'total_mailings_count':
+                    Mailing.objects.all().filter(owner=self.request.user).count(),
                 'active_mailings_count':
                     Mailing.objects.all().filter(owner=self.request.user).filter(status='Запущена').count(),
                 'clients_count':
@@ -103,7 +105,7 @@ class ClientDeleteView(generic.DeleteView):
     template_name = 'delete_client.html'
 
     def post(self, request, *args, **kwargs) -> Any:
-        obj = Client.objects.get(id=kwargs['pk'])
+        Client.objects.get(id=kwargs['pk'])
         super(ClientDeleteView, self).post(request, *args, **kwargs)
         return redirect('home')
 
@@ -178,7 +180,7 @@ class MessageDeleteView(generic.DeleteView):
     template_name = 'delete_message.html'
 
     def post(self, request, *args, **kwargs) -> Any:
-        obj = Message.objects.get(id=kwargs['pk'])
+        Message.objects.get(id=kwargs['pk'])
         super(MessageDeleteView, self).post(request, *args, **kwargs)
         return redirect('home')
 
@@ -295,7 +297,7 @@ class MailingDeleteView(generic.DeleteView):
     template_name = 'delete_mailing.html'
 
     def post(self, request, *args, **kwargs) -> Any:
-        obj = Mailing.objects.get(id=kwargs['pk'])
+        Mailing.objects.get(id=kwargs['pk'])
         super(MailingDeleteView, self).post(request, *args, **kwargs)
         return redirect('home')
 

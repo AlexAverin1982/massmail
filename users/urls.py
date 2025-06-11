@@ -1,9 +1,10 @@
 from django.urls import path
-from django.contrib.auth.views import LogoutView, LoginView
+from django.contrib.auth.views import LogoutView
+# , LoginView
 from .views import (RegisterView, UserProfileView, UserDeleteView,
                     UserUpdateView, UserLoginView, UserConfirmEmailView,
                     EmailConfirmationSentView, EmailConfirmedView,
-                    EmailConfirmationFailedView, UsersControlView, InitUsersControlView, UserForgotPasswordView,
+                    EmailConfirmationFailedView, UsersControlView, UserForgotPasswordView,
                     UserPasswordResetConfirmView)
 
 urlpatterns = [

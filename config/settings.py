@@ -171,13 +171,13 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.FileHandler",
             "formatter": "verbose",
-            "filename": "d:\python\skypro\massmail\logs\debug.log",
+            "filename": "d:\\python\\skypro\\massmail\\logs\\debug.log",
         },
         "file_login": {
             "level": "INFO",
             "class": "logging.FileHandler",
             "formatter": "verbose",
-            "filename": "d:\python\skypro\massmail\logs\logins.log",
+            "filename": "d:\\python\\skypro\\massmail\\logs\\logins.log",
         },
     },
 

@@ -1,9 +1,11 @@
 from django.http import HttpResponseRedirect
 # from django.urls import reverse_lazy
 from django.urls import reverse
-from django.views.generic.edit import FormView, CreateView
-from django.views.generic import DetailView, DeleteView, UpdateView, TemplateView, View, ListView
-from django.contrib.auth.views import LoginView, LogoutView
+from django.views.generic.edit import CreateView
+from django.views.generic import DetailView, DeleteView, UpdateView, TemplateView, View
+# ListView
+from django.contrib.auth.views import LoginView
+# LogoutView
 from django.contrib.auth import login, authenticate
 from django.core.mail import send_mail
 from django.conf import settings
@@ -19,8 +21,10 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmVie
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import UserForgotPasswordForm, UserSetNewPasswordForm
-from .forms import CustomUserCreationForm, CustomUserUpdateForm, LoginForm, UsersControlForm, UsersControlInitForm
+from .forms import UserSetNewPasswordForm
+# UserForgotPasswordForm,
+from .forms import CustomUserCreationForm, CustomUserUpdateForm, UsersControlInitForm
+# LoginForm, UsersControlForm
 from .mixins import UserIsNotAuthenticated
 from .models import CustomUser, UsersControl
 
@@ -37,7 +41,7 @@ class UserLoginView(LoginView):
         return render(request, 'login.html', {'form': form})
 
     def post(self, request, **kwargs):
-        form = AuthenticationForm(request.POST)
+        AuthenticationForm(request.POST)
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(username=username, password=password)
@@ -76,7 +80,8 @@ class RegisterView(FormView):
         # current_site = '127.0.0.1'
         # send_mail(
         #     'Подтвердите свой электронный адрес',
-        #     f'Пожалуйста, перейдите по следующей ссылке, чтобы подтвердить свой адрес электронной почты: http://{current_site}{activation_url}',
+        #     f'Пожалуйста, перейдите по следующей ссылке,
+        чтобы подтвердить свой адрес электронной почты: http://{current_site}{activation_url}',
         #     'service.notehunter@gmail.com',
         #     [user.email],
         #     fail_silently=False,
@@ -114,7 +119,8 @@ class RegisterView(UserIsNotAuthenticated, CreateView):
         current_site = Site.objects.get_current().domain
         send_mail(
             'Подтвердите свой электронный адрес',
-            f'Пожалуйста, перейдите по следующей ссылке, чтобы подтвердить свой адрес электронной почты: http://{current_site}{activation_url}',
+            f'Пожалуйста, перейдите по следующей ссылке, '
+            f'чтобы подтвердить свой адрес электронной почты: http://{current_site}{activation_url}',
             settings.ADMIN_MAIL,
             [user.email],
             fail_silently=False,

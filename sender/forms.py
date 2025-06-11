@@ -1,8 +1,8 @@
 import datetime
 
 from django import forms
-from django.forms import CheckboxSelectMultiple
-from django.http import HttpResponseRedirect
+# from django.forms import CheckboxSelectMultiple
+# from django.http import HttpResponseRedirect
 
 from .models import Client, Message, Mailing
 from .mixins import FormControlMixin
