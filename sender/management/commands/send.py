@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
-from django.contrib.messages.context_processors import messages
+# from django.contrib.messages.context_processors import messages
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import Group, Permission
+# from django.contrib.auth.models import Group, Permission
 from django.shortcuts import get_object_or_404
 
 from sender.models import Mailing, Attempt

@@ -14,6 +14,7 @@ class UserIsNotAuthenticated(UserPassesTestMixin):
     def handle_no_permission(self):
         return redirect('home')
 
+
 class FormControlMixin:
     def __init__(self, *args, **kwargs):
         super(FormControlMixin, self).__init__(*args, **kwargs)

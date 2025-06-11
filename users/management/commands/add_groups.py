@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group, Permission
 
+
 class Command(BaseCommand):
     help = "Добавление в базу данных групп контроля доступа к данным сервиса"
 
