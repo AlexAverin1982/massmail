@@ -6,6 +6,10 @@ from smtplib import SMTPException
 
 from users.models import CustomUser
 
+"""
+модели клиентов, сообщений, рассылок
+"""
+
 
 class Client(models.Model):
     """
@@ -75,6 +79,9 @@ class Mailing(models.Model):
         permissions = [('can_disable_mailing', 'Can enable and disable mailing'), ]
 
     def send(self):
+        """
+        метод отсылки сообщения получателям с регистрацией резульатов рассылки
+        """
         attempt = Attempt()
         attempt.mailing = self
         attempt.owner = self.owner
@@ -85,21 +92,21 @@ class Mailing(models.Model):
         try:
             send_mail(message.topic, message.text, settings.EMAIL_HOST_USER, recipients, fail_silently=False)
         except SMTPException as e:
-            print("--------------- failure -------------------------")
-            print(f"type of exception: {type(e)}")
+            # print("--------------- failure -------------------------")
+            # print(f"type of exception: {type(e)}")
 
             attempt.server_response = str(e)
             if hasattr(e, 'smtp_code'):
                 attempt.server_response = e.smtp_code + ' : ' + e.strerror
-            print(attempt.server_response)
+            # print(attempt.server_response)
         except TimeoutError as e:
-            print("--------------- failure -------------------------")
-            print(f"type of exception: {type(e)}")
+            # print("--------------- failure -------------------------")
+            # print(f"type of exception: {type(e)}")
 
             attempt.server_response = str(e)
             if hasattr(e, 'smtp_code'):
                 attempt.server_response = e.smtp_code + ' : ' + e.strerror
-            print(attempt.server_response)
+            # print(attempt.server_response)
         else:
             attempt.is_successful = True
         finally:

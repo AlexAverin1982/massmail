@@ -1,8 +1,3 @@
-# from http.client import HTTPResponse
-# from bootstrap_datepicker_plus.widgets import DateTimePickerInput
-# from django.db.transaction import commit
-# from django.forms import CheckboxSelectMultiple, SelectMultiple
-# import django.utils.functional
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
@@ -19,6 +14,10 @@ from .forms import ClientCreateForm, MessageCreateForm, MailingCreateForm
 
 
 class HomeView(generic.TemplateView):
+    """
+    домашняя страница: главное меню для регистрации и входа и выхода, кнопки управления.
+    основное окно - три колонки: клиенты, сообщения и рассылки пользователя
+    """
     template_name = "home.html"
 
     def get_context_data(self, **kwargs):
@@ -39,6 +38,9 @@ class HomeView(generic.TemplateView):
 
 
 class ClientCreateView(generic.CreateView):
+    """
+    Вид создания клиента
+    """
     model = Client
     form_class = ClientCreateForm
     # fields = ['name', 'price', 'category', 'image', 'description']
@@ -59,7 +61,7 @@ class ClientCreateView(generic.CreateView):
         request.POST = request.POST.copy()
         request.POST['owner'] = request.user
         data = ClientCreateForm(request.POST)
-        print(f"request.user: {request.user}")
+        # print(f"request.user: {request.user}")
 
         if data.is_valid():
             data.instance.owner = request.user
@@ -69,22 +71,28 @@ class ClientCreateView(generic.CreateView):
             data.save_m2m()
             return HttpResponseRedirect(reverse_lazy('home'))
         else:
-            print(f"request.POST: {request.POST}")
-            print(f"data: {data}")
-            errors = self.get_form().errors
-            print(f"errors: {errors}")
+            # print(f"request.POST: {request.POST}")
+            # print(f"data: {data}")
+            # errors = self.get_form().errors
+            # print(f"errors: {errors}")
             # kwargs['errors_data'] = self.get_form().errors
             return HttpResponseRedirect(reverse('errors'))
 
 
 @method_decorator(cache_page(60 * 15), name='dispatch')
 class ClientDetailView(generic.DetailView):
+    """
+    просмотр свойств клиента
+    """
     model = Client
     template_name = "client_details.html"
     context_object_name = 'client'
 
 
 class ClientUpdateView(generic.UpdateView):
+    """
+    переход к форме изменения свойств клиента
+    """
     model = Client
     form_class = ClientCreateForm
     template_name = 'new_client.html'
@@ -99,6 +107,9 @@ class ClientUpdateView(generic.UpdateView):
 
 
 class ClientDeleteView(generic.DeleteView):
+    """
+    переход к удалению клиента
+    """
     model = Client
     success_url = reverse_lazy("home")
     context_object_name = 'client'
@@ -114,6 +125,9 @@ class ClientDeleteView(generic.DeleteView):
 
 
 class MessageCreateView(generic.CreateView):
+    """
+    переход к форме нового сообщения
+    """
     model = Message
     form_class = MessageCreateForm
     template_name = 'new_message.html'
@@ -135,7 +149,7 @@ class MessageCreateView(generic.CreateView):
         request.POST = request.POST.copy()
         request.POST['owner'] = request.user
         data = MessageCreateForm(request.POST)  # ФОРМА А НЕ ВИД!!!
-        print(f"request.user: {request.user}")
+        # print(f"request.user: {request.user}")
         # эта песня посвещена борьбе за мир!
         if data.is_valid():
             data.instance.owner = request.user
@@ -144,22 +158,28 @@ class MessageCreateView(generic.CreateView):
             update.save()
             return HttpResponseRedirect(reverse_lazy('home'))
         else:
-            print(f"request.POST: {request.POST}")
-            print(f"data: {data}")
-            errors = self.get_form().errors
-            print(f"errors: {errors}")
+            # print(f"request.POST: {request.POST}")
+            # print(f"data: {data}")
+            # errors = self.get_form().errors
+            # print(f"errors: {errors}")
             # kwargs['errors_data'] = self.get_form().errors
             return HttpResponseRedirect(reverse('errors'))
 
 
 @method_decorator(cache_page(60 * 20), name='dispatch')
 class MessageDetailView(generic.DetailView):
+    """
+    переход к свойствам сообщения
+    """
     model = Message
     template_name = "message_details.html"
     context_object_name = 'message'
 
 
 class MessageUpdateView(generic.UpdateView):
+    """
+    переход к редактированию свойств сообщения
+    """
     model = Message
     form_class = MessageCreateForm
     template_name = 'new_message.html'
@@ -174,6 +194,9 @@ class MessageUpdateView(generic.UpdateView):
 
 
 class MessageDeleteView(generic.DeleteView):
+    """
+    переход к удалению сообщения
+    """
     model = Message
     success_url = reverse_lazy("home")
     context_object_name = 'message'
@@ -188,6 +211,9 @@ class MessageDeleteView(generic.DeleteView):
 #######################################################################################################################
 
 class MailingCreateView(generic.edit.CreateView):
+    """
+    переход к форме создания рассылки
+    """
     model = Mailing
     form_class = MailingCreateForm
     template_name = 'new_mailing.html'
@@ -197,7 +223,7 @@ class MailingCreateView(generic.edit.CreateView):
     def get_form_kwargs(self):
         kwargs = super(MailingCreateView, self).get_form_kwargs()
         kwargs['user'] = self.request.user
-        print(f"kwargs['user']: {kwargs['user']}")
+        # print(f"kwargs['user']: {kwargs['user']}")
         return kwargs
 
     def form_valid(self, form):
@@ -230,24 +256,24 @@ class MailingCreateView(generic.edit.CreateView):
             form_data.save_m2m()
             return redirect(reverse_lazy('mailing_details', kwargs={'pk': mailing.id}))
         else:
-            print(f"request.POST: {request.POST}")
-            print(f"mailing: {form_data}")
+            # print(f"request.POST: {request.POST}")
+            # print(f"mailing: {form_data}")
             errors = self.get_form().errors
-            print(f"errors: {errors}")
+            # print(f"errors: {errors}")
             kwargs['errors_data'] = self.get_form().errors
-            return HttpResponseRedirect(reverse('errors'))
+            # return reverse_lazy('errors', kwargs={'errors': errors})
+            result = HttpResponseRedirect(reverse_lazy('errors', kwargs={'errors': errors}))
+            # print(f"-----------result: {result}")
+            return result
 
 
 class MailingUpdateView(generic.UpdateView):
+    """
+    переход к форме редактирования свойств рассылки
+    """
     model = Mailing
     form_class = MailingCreateForm
     template_name = 'new_mailing.html'
-
-    # extra_context = {
-    #     'title': 'Редактирование рассылки',
-    #     'mailing_editing_mode': True,
-    #     'possible_clients': Client.objects.all(),
-    # }
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -257,16 +283,17 @@ class MailingUpdateView(generic.UpdateView):
             'mailing_editing_mode': True,
         })
 
-        # print(f"context: {context}")
-        # print(f"context.mailing clients: {context['mailing'].clients.all()}")
         return context
 
     def get_success_url(self):
         return reverse("mailing_details", kwargs=self.kwargs)
 
 
-# @method_decorator(cache_page(60 * 20), name='dispatch')
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class MailingDetailView(generic.DetailView):
+    """
+    просмотр свойств рассылки
+    """
     model = Mailing
     template_name = "mailing_details.html"
     context_object_name = 'mailing'
@@ -291,6 +318,9 @@ class MailingDetailView(generic.DetailView):
 
 
 class MailingDeleteView(generic.DeleteView):
+    """
+    удаление рассылки
+    """
     model = Mailing
     success_url = reverse_lazy("home")
     context_object_name = 'mailing'
@@ -303,14 +333,20 @@ class MailingDeleteView(generic.DeleteView):
 
 
 class MailingErrorsView(generic.TemplateView):
+    """
+    сообщение об ошибках при редактировании или создании объектов
+    """
     template_name = 'errors.html'
 
 
 class ForceSendMailingView(generic.DetailView):
+    """
+    отправка рассылки вручную
+    """
     template_name = 'force_send_mailing.html'
 
     def get(self, request, *args, **kwargs):
-        print('force mailing to be sent manually...')
+        # print('force mailing to be sent manually...')
         try:
             mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
             mailing.send()
@@ -322,6 +358,9 @@ class ForceSendMailingView(generic.DetailView):
 
 # @method_decorator(cache_page(60 * 20), name='dispatch')
 class MailingAttemptsListView(generic.TemplateView):
+    """
+    окно списка попыток рассылок
+    """
     # model = Attempt
     # template_name = "mailing_attempts.html"
     template_name = "attempts_list.html"
@@ -331,7 +370,7 @@ class MailingAttemptsListView(generic.TemplateView):
         pk = self.kwargs.get('pk')
         mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
         attempts = Attempt.objects.filter(mailing=pk)  # .filter(mailing=pk).order_by("-date_time")
-        print(f"mailing: {mailing}")
+        # print(f"mailing: {mailing}")
         # print(f"attempts: {attempts}")
 
         # print(f"kwargs: {kwargs}")
@@ -343,10 +382,14 @@ class MailingAttemptsListView(generic.TemplateView):
 
 
 class CopyMailingView(generic.DetailView):
+    """
+    создание копии рассылки
+    """
+
     # template_name = 'force_send_mailing.html'
 
     def get(self, request, *args, **kwargs):
-        print('making copy of an existing one...')
+        # print('making copy of an existing one...')
         mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
         mailing.id = None
         mailing.save()
@@ -354,6 +397,9 @@ class CopyMailingView(generic.DetailView):
 
 
 class MailingListView(generic.ListView):
+    """
+    список рассылок
+    """
     model = Mailing
     template_name = "mailing_list.html"
     context_object_name = 'mailings'
@@ -374,6 +420,9 @@ class MailingListView(generic.ListView):
 
 
 class MessageListView(generic.ListView):
+    """
+    окно списка сообщений
+    """
     model = Message
     template_name = "messages_list.html"
     context_object_name = 'messages'
@@ -388,6 +437,9 @@ class MessageListView(generic.ListView):
 
 
 class ClientListView(generic.ListView):
+    """
+    окно списка клиентов
+    """
     model = Client
     template_name = "clients_list.html"
     context_object_name = 'clients'
@@ -401,6 +453,9 @@ class ClientListView(generic.ListView):
 
 
 class AttemptListView(generic.ListView):
+    """
+    окно списка попыток рассылок
+    """
     model = Attempt
     template_name = "attempts_list.html"
     context_object_name = 'attempts'
@@ -420,6 +475,9 @@ class AttemptListView(generic.ListView):
 
 
 class StatisticsView(generic.TemplateView):
+    """
+    окно статистики
+    """
     template_name = 'statistics.html'
 
     def get_context_data(self, **kwargs):

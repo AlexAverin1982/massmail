@@ -3,6 +3,9 @@ from django.db import models
 
 
 class CustomUser(AbstractUser):
+    """
+    модель пользователя сервиса
+    """
     email = models.EmailField(unique=True)
 
     phone_number = models.CharField(max_length=15, blank=True, null=True)
@@ -25,6 +28,9 @@ class CustomUser(AbstractUser):
 
 
 class UsersControl(models.Model):
+    """
+    механизм управления всеми пользователями как единым целым (мне так удобно)
+    """
     users = models.ManyToManyField(CustomUser, verbose_name="Пользователи, которым можно заходить в приложение")
 
     class Meta:
