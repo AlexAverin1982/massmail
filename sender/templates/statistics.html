@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Статистика{% endblock %}
+{% block content %}
+<p>
+<h4>Число удачных попыток рассылок: {{successful_attempts_count}}
+    <br>
+    Число попыток рассылок всего: {{total_attempts_count}}
+    <br>
+    </p>
+    <p>
+    {% if mailings_list %}
+    Данные по {{ mailings_list|length }} рассылкам:
+    <ul>
+        {% for m in mailings_list %}
+        <li>
+            Для <a href="{% url 'mailing_details' pk=m.id %}">рассылки {{m.id}}</a>
+            <a href="{% url 'message_details' pk=m.message_id %}">сообщения '{{m.topic}}'</a>
+            всего совершено {{m.total_attempts}} попыток, из них {{m.successful_attempts}} - удачно.
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    </p>
+</h4>
+<button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+        onClick="javascript:history.go(-1);">Назад
+</button>
+{% endblock %}

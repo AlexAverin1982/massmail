@@ -21,6 +21,8 @@
         </li>
         {% endfor %}
     </ul>
+    {% else %}
+    <h4>Попыток отправить эту рассылку еще не было</h4>
     {% endif %}
     <a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На домашнюю</a>
     <button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"

@@ -1,18 +1,24 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordResetForm, SetPasswordForm
 from .mixins import FormControlMixin
-from .models import CustomUser
+from .models import CustomUser, UsersControl
+"""
+формы для работы с пользователями
+"""
 
 
 class LoginForm(FormControlMixin, forms.Form):
+    """
+    вход для зарегистрированного пользователя
+    """
     username = forms.CharField(label='Username')
     password = forms.CharField(label='Password', widget=forms.PasswordInput)
 
 
 class CustomUserCreationForm(FormControlMixin, UserCreationForm):
-    # phone_number = forms.CharField(max_length=15, required=False,
-    #                                help_text='Необязательное поле. Введите ваш номер телефона.')
+    """
+    форма регистрации пользователя
+    """
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser
@@ -32,6 +38,9 @@ class CustomUserCreationForm(FormControlMixin, UserCreationForm):
 
 
 class CustomUserUpdateForm(FormControlMixin, UserChangeForm):
+    """
+    форма добавления данных пользователя
+    """
     # phone_number = forms.CharField(max_length=15, required=False,
     #                                help_text='Необязательное поле. Введите ваш номер телефона.')
 
@@ -48,3 +57,61 @@ class CustomUserUpdateForm(FormControlMixin, UserChangeForm):
     #     if phone_number and not phone_number.isdigit():
     #         raise forms.ValidationError('Номер телефона должен содержать только цифры')
     #     return phone_number
+
+
+class UsersControlForm(FormControlMixin, forms.ModelForm):
+    """
+    форма для блокировки/разблокировки пользователей
+    """
+    users = forms.ModelMultipleChoiceField(queryset=CustomUser.objects.all())
+
+    class Meta:
+        model = UsersControl
+        fields = '__all__'  # no use, form is customized, but without it server won't start
+
+    def __init__(self, *args, **kwargs):
+        super(UsersControlForm, self).__init__(*args, **kwargs)
+
+
+class UsersControlInitForm(FormControlMixin, forms.ModelForm):
+    """форма для создания механизма блокировки/разблокировки пользователей"""
+    users = forms.ModelMultipleChoiceField(queryset=CustomUser.objects.all(),
+                                           label="Пользователи, которым можно заходить в приложение")
+
+    class Meta:
+        model = UsersControl
+        fields = '__all__'  # no use, form is customized, but without it server won't start
+
+
+class UserForgotPasswordForm(PasswordResetForm):
+    """
+    Запрос на восстановление пароля
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        Обновление стилей формы
+        """
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({
+                'class': 'form-control',
+                'autocomplete': 'off'
+            })
+
+
+class UserSetNewPasswordForm(SetPasswordForm):
+    """
+    Изменение пароля пользователя после подтверждения
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        Обновление стилей формы
+        """
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({
+                'class': 'form-control',
+                'autocomplete': 'off'
+            })

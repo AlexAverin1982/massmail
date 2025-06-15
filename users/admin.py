@@ -4,6 +4,11 @@ from .models import CustomUser
 
 from groupadmin_users.forms import GroupAdminForm
 
+"""
+содержимое админки, то, чем можно управлять
+"""
+
+
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ("id", "username", "is_superuser", "is_staff", "email")
@@ -25,6 +30,6 @@ class GroupAdmin(admin.ModelAdmin):
     # Filter permissions horizontal as well.
     filter_horizontal = ['permissions']
 
+
 # Register the new Group ModelAdmin.
 admin.site.register(Group, GroupAdmin)
-
