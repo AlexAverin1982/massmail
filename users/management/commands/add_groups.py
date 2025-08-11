@@ -3,6 +3,12 @@ from django.contrib.auth.models import Group, Permission
 
 
 class Command(BaseCommand):
+    """
+    команда добавления предопределенных групп пользователей в базу данных из командной строки
+    Как пользоваться:
+    находясь в каталоге приложения, ввести в командной строке python manage.py add_groups
+
+    """
     help = "Добавление в базу данных групп контроля доступа к данным сервиса"
 
     def handle(self, *args, **kwargs) -> None:

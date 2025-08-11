@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect
 # from django.urls import reverse_lazy
 from django.urls import reverse
@@ -32,6 +33,9 @@ User = get_user_model()
 
 
 class UserLoginView(LoginView):
+    """
+    вход пользователя в систему
+    """
     form_class = AuthenticationForm
     template_name = 'login.html'
     next_page = 'home'
@@ -52,6 +56,14 @@ class UserLoginView(LoginView):
         else:
             messages.error(request, 'Логин или пароль неправильные')
             return redirect(reverse('home'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if not isinstance(self.request.user, AnonymousUser):
+            context.update({
+                'users_control': UsersControl.objects.all().count(),
+            })
+        return context
 
 
 """
@@ -129,6 +141,9 @@ class RegisterView(UserIsNotAuthenticated, CreateView):
 
 
 class UserProfileView(DetailView):
+    """
+    просмотр профиля пользователя
+    """
     model = CustomUser
     template_name = "user_profile.html"
     context_object_name = 'user'
@@ -136,12 +151,18 @@ class UserProfileView(DetailView):
 
 
 class UserDeleteView(DeleteView):
+    """
+    удаление пользователя
+    """
     model = CustomUser
     success_url = reverse_lazy("home")
     template_name = 'delete_user.html'
 
 
 class UserUpdateView(UpdateView):
+    """
+    обновление профиля пользователя
+    """
     model = CustomUser
     form_class = CustomUserUpdateForm
     template_name = 'register.html'
@@ -150,14 +171,14 @@ class UserUpdateView(UpdateView):
         'User_editing_mode': True,
     }
 
-    # def __init__(self):
-    #     super().__init__()
-
     def get_success_url(self):
         return reverse("user_profile", kwargs=self.kwargs)
 
 
 class UserConfirmEmailView(View):
+    """
+    подтверждение адреса почты при регистрации
+    """
     def get(self, request, uidb64, token):
         try:
             uid = urlsafe_base64_decode(uidb64)
@@ -175,6 +196,9 @@ class UserConfirmEmailView(View):
 
 
 class EmailConfirmationSentView(TemplateView):
+    """
+    отображение сообщения, что подтверждение выслано на указанный адрес почты
+    """
     template_name = 'email_confirmation_sent.html'
 
     def get_context_data(self, **kwargs):
@@ -184,6 +208,9 @@ class EmailConfirmationSentView(TemplateView):
 
 
 class EmailConfirmedView(TemplateView):
+    """
+    отображение сообщения, что адрес почты подтвержден
+    """
     template_name = 'email_confirmed.html'
 
     def get_context_data(self, **kwargs):
@@ -193,6 +220,9 @@ class EmailConfirmedView(TemplateView):
 
 
 class EmailConfirmationFailedView(TemplateView):
+    """
+    отображение сообщения, что подтвердить адрес почты не удалось
+    """
     template_name = 'email_confirmation_failed.html'
 
     def get_context_data(self, **kwargs):
@@ -202,6 +232,9 @@ class EmailConfirmationFailedView(TemplateView):
 
 
 class UsersControlView(UpdateView):
+    """
+    управление пользователями (для менеджеров и админа)
+    """
     model = UsersControl
     form_class = UsersControlInitForm
     template_name = "init_users_control.html"
@@ -222,7 +255,7 @@ class UsersControlView(UpdateView):
         data_in_form = UsersControlInitForm(request.POST)
         # active_users = req_data['users']
         active_users = sorted([int(id) for id in req_data['users']])
-        print(f"active_users: {active_users}")
+        # print(f"active_users: {active_users}")
 
         all_users = CustomUser.objects.all().values_list('id', flat=True)
         inactive_users = all_users.exclude(id__in=active_users)
@@ -245,6 +278,9 @@ class UsersControlView(UpdateView):
 
 
 class InitUsersControlView(CreateView):
+    """
+    инициализация механизма управления пользователями
+    """
     model = UsersControl
     form_class = UsersControlInitForm
     template_name = 'init_users_control.html'
@@ -262,9 +298,6 @@ class InitUsersControlView(CreateView):
 
     def post(self, request, *args, **kwargs) -> Any:
         data = UsersControlInitForm(request.POST)
-
-        print(f"request.POST: {request.POST}")
-        print(f"users: {request.POST.get('users')}")
 
         if data.is_valid():
             update = data.save(commit=False)

@@ -4,6 +4,10 @@ from .models import CustomUser
 
 from groupadmin_users.forms import GroupAdminForm
 
+"""
+содержимое админки, то, чем можно управлять
+"""
+
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):

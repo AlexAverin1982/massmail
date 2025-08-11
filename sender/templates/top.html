@@ -52,7 +52,11 @@
                         <li><a class="dropdown-item" href="{% url 'all_clients_list' %}">клиентами</a></li>
                         <li><a class="dropdown-item" href="{% url 'all_mailing_list' %}">рассылками</a></li>
                         {% if perms.users.can_block_user %}
+                        {% if users_control and users_control > 0%}
                         <li><a class="dropdown-item" href="{% url 'control_users' pk=1 %}">пользователями</a></li>
+                        {% else %}
+                        <li><a class="dropdown-item" href="{% url 'init_users_control' %}">пользователями</a></li>
+                        {% endif %}
                         {% endif %}
                     </ul>
                 </li>

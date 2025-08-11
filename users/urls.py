@@ -5,7 +5,7 @@ from .views import (RegisterView, UserProfileView, UserDeleteView,
                     UserUpdateView, UserLoginView, UserConfirmEmailView,
                     EmailConfirmationSentView, EmailConfirmedView,
                     EmailConfirmationFailedView, UsersControlView, UserForgotPasswordView,
-                    UserPasswordResetConfirmView)
+                    UserPasswordResetConfirmView, InitUsersControlView)
 
 urlpatterns = [
     # path('login/', LoginView.as_view(template_name='login.html', next_page='home'), name='login'),
@@ -19,7 +19,7 @@ urlpatterns = [
     path("control_users/<int:pk>/", UsersControlView.as_view(), name="control_users"),
     path('password_reset/', UserForgotPasswordView.as_view(), name='password_reset'),
     path('set-new-password/<uidb64>/<token>/', UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    # path("init_users_control/", InitUsersControlView.as_view(), name="init_users_control"),
+    path("init_users_control/", InitUsersControlView.as_view(), name="init_users_control"),
     path('email_confirmation_sent/', EmailConfirmationSentView.as_view(), name='email_confirmation_sent'),
     path('confirm_email/<str:uidb64>/<str:token>/', UserConfirmEmailView.as_view(), name='confirm_email'),
     path('email_confirmed/', EmailConfirmedView.as_view(), name='email_confirmed'),
