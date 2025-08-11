@@ -1243,3 +1243,6 @@ INFO 2025-06-11 15:37:39,099 autoreload 9128 14712 D:\python\skypro\massmail\sen
 INFO 2025-06-11 15:37:44,025 autoreload 4188 13436 Watching for file changes with StatReloader
 INFO 2025-06-11 15:37:58,909 basehttp 4188 11848 "GET /mailing_schedule/26/ HTTP/1.1" 200 11918
 INFO 2025-06-11 15:55:27,294 basehttp 4188 8812 "GET /mailing_schedule/26/ HTTP/1.1" 200 11918
+INFO 2025-08-11 15:20:51,650 autoreload 21568 1444 Watching for file changes with StatReloader
+INFO 2025-08-11 15:21:08,227 basehttp 21568 16464 "GET / HTTP/1.1" 200 3898
+INFO 2025-08-11 15:21:10,268 basehttp 21568 16464 "GET /static/favicon.ico?v=2 HTTP/1.1" 200 15086
