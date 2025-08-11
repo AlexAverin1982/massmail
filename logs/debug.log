@@ -1165,3 +1165,81 @@ INFO 2025-06-11 12:51:31,389 basehttp 12500 2588 "GET / HTTP/1.1" 200 9223
 INFO 2025-06-11 12:52:14,571 basehttp 12500 10304 "GET / HTTP/1.1" 200 9225
 INFO 2025-06-11 12:52:20,586 basehttp 12500 5632 "POST /auth/logout/ HTTP/1.1" 302 0
 INFO 2025-06-11 12:52:20,595 basehttp 12500 5632 "GET / HTTP/1.1" 200 3868
+INFO 2025-06-11 14:10:25,662 autoreload 5628 7264 Watching for file changes with StatReloader
+INFO 2025-06-11 14:10:50,220 basehttp 5628 1860 "GET /auth/login/ HTTP/1.1" 200 4059
+INFO 2025-06-11 14:10:57,089 basehttp 5628 848 "POST /auth/login/ HTTP/1.1" 302 0
+INFO 2025-06-11 14:10:57,188 basehttp 5628 848 "GET / HTTP/1.1" 200 3868
+INFO 2025-06-11 14:11:01,601 basehttp 5628 7108 "GET /auth/login/ HTTP/1.1" 200 4218
+INFO 2025-06-11 14:11:07,603 basehttp 5628 5924 "POST /auth/login/ HTTP/1.1" 302 0
+INFO 2025-06-11 14:11:07,615 basehttp 5628 5924 "GET / HTTP/1.1" 200 3868
+INFO 2025-06-11 14:11:10,105 basehttp 5628 5812 "GET /auth/login/ HTTP/1.1" 200 4218
+INFO 2025-06-11 14:11:16,166 basehttp 5628 9692 "POST /auth/login/ HTTP/1.1" 302 0
+INFO 2025-06-11 14:11:16,324 basehttp 5628 9692 "GET / HTTP/1.1" 200 9225
+INFO 2025-06-11 14:11:20,665 basehttp 5628 12208 "GET /auth/control_users/1/ HTTP/1.1" 200 11000
+INFO 2025-06-11 14:11:24,692 basehttp 5628 12208 "POST /auth/control_users/1/ HTTP/1.1" 302 0
+INFO 2025-06-11 14:11:24,813 basehttp 5628 12208 "GET / HTTP/1.1" 200 9225
+INFO 2025-06-11 14:11:36,595 basehttp 5628 8480 "GET /mailing_details/26/ HTTP/1.1" 200 8507
+ERROR 2025-06-11 14:11:39,607 log 5628 3320 Internal Server Error: /mailing_schedule/26/
+Traceback (most recent call last):
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\edit.py", line 142, in get
+    return self.render_to_response(self.get_context_data())
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\edit.py", line 72, in get_context_data
+    kwargs["form"] = self.get_form()
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\edit.py", line 37, in get_form
+    return form_class(**self.get_form_kwargs())
+TypeError: 'NoneType' object is not callable
+ERROR 2025-06-11 14:11:39,611 basehttp 5628 3320 "GET /mailing_schedule/26/ HTTP/1.1" 500 88286
+ERROR 2025-06-11 14:12:51,863 log 5628 6364 Internal Server Error: /mailing_schedule/26/
+Traceback (most recent call last):
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\edit.py", line 142, in get
+    return self.render_to_response(self.get_context_data())
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\edit.py", line 72, in get_context_data
+    kwargs["form"] = self.get_form()
+  File "D:\python\skypro\massmail\.venv\lib\site-packages\django\views\generic\edit.py", line 37, in get_form
+    return form_class(**self.get_form_kwargs())
+TypeError: 'NoneType' object is not callable
+ERROR 2025-06-11 14:12:51,865 basehttp 5628 6364 "GET /mailing_schedule/26/ HTTP/1.1" 500 88423
+INFO 2025-06-11 14:12:52,374 autoreload 5628 7264 D:\python\skypro\massmail\sender\views.py changed, reloading.
+INFO 2025-06-11 14:12:55,984 autoreload 9988 3644 Watching for file changes with StatReloader
+INFO 2025-06-11 14:12:59,225 basehttp 9988 8600 "GET /mailing_schedule/26/ HTTP/1.1" 200 10931
+INFO 2025-06-11 14:13:48,750 basehttp 9988 1552 "GET /mailing_schedule/26/ HTTP/1.1" 200 10931
+INFO 2025-06-11 14:13:51,268 basehttp 9988 1560 "GET /mailing_schedule/26/ HTTP/1.1" 200 11918
+INFO 2025-06-11 14:18:19,622 autoreload 9988 3644 D:\python\skypro\massmail\sender\views.py changed, reloading.
+INFO 2025-06-11 14:18:22,362 autoreload 13672 848 Watching for file changes with StatReloader
+INFO 2025-06-11 14:23:21,489 autoreload 13672 848 D:\python\skypro\massmail\sender\views.py changed, reloading.
+INFO 2025-06-11 14:23:23,912 autoreload 6816 11800 Watching for file changes with StatReloader
+INFO 2025-06-11 14:26:41,566 autoreload 6816 11800 D:\python\skypro\massmail\sender\views.py changed, reloading.
+INFO 2025-06-11 14:26:44,237 autoreload 3312 13436 Watching for file changes with StatReloader
+INFO 2025-06-11 15:21:55,993 autoreload 3312 13436 D:\python\skypro\massmail\sender\forms.py changed, reloading.
+INFO 2025-06-11 15:22:03,348 autoreload 6072 11036 Watching for file changes with StatReloader
+INFO 2025-06-11 15:22:43,613 autoreload 6072 11036 D:\python\skypro\massmail\sender\forms.py changed, reloading.
+INFO 2025-06-11 15:22:47,970 autoreload 4020 14216 Watching for file changes with StatReloader
+INFO 2025-06-11 15:23:48,919 autoreload 4020 14216 D:\python\skypro\massmail\sender\forms.py changed, reloading.
+INFO 2025-06-11 15:23:51,604 autoreload 10336 11236 Watching for file changes with StatReloader
+INFO 2025-06-11 15:24:16,651 basehttp 10336 8008 "GET /mailing_schedule/26/ HTTP/1.1" 200 11918
+INFO 2025-06-11 15:25:02,596 autoreload 10336 11236 D:\python\skypro\massmail\sender\forms.py changed, reloading.
+INFO 2025-06-11 15:25:05,483 autoreload 3332 556 Watching for file changes with StatReloader
+INFO 2025-06-11 15:32:36,230 basehttp 3332 14632 "GET /mailing_schedule/26/ HTTP/1.1" 200 11918
+INFO 2025-06-11 15:34:10,021 autoreload 3332 556 D:\python\skypro\massmail\sender\forms.py changed, reloading.
+INFO 2025-06-11 15:34:13,907 autoreload 9128 14712 Watching for file changes with StatReloader
+INFO 2025-06-11 15:34:16,267 basehttp 9128 15232 "GET /mailing_schedule/26/ HTTP/1.1" 200 11918
+INFO 2025-06-11 15:37:39,099 autoreload 9128 14712 D:\python\skypro\massmail\sender\forms.py changed, reloading.
+INFO 2025-06-11 15:37:44,025 autoreload 4188 13436 Watching for file changes with StatReloader
+INFO 2025-06-11 15:37:58,909 basehttp 4188 11848 "GET /mailing_schedule/26/ HTTP/1.1" 200 11918
+INFO 2025-06-11 15:55:27,294 basehttp 4188 8812 "GET /mailing_schedule/26/ HTTP/1.1" 200 11918

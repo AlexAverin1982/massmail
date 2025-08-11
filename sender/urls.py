@@ -23,6 +23,7 @@ urlpatterns = [
     path("force_mailing/<int:pk>/", views.ForceSendMailingView.as_view(), name="force_mailing"),
     path("delete_mailing/<int:pk>/", views.MailingDeleteView.as_view(), name="delete_mailing"),
     path("copy_mailing/<int:pk>/", views.CopyMailingView.as_view(), name="copy_mailing"),
+    path("mailing_schedule/<int:pk>/", views.MailingScheduleView.as_view(), name="mailing_schedule"),
     path("mailing_list/", views.MailingListView.as_view(), name="mailing_list", kwargs={"model": "Mailing",
                                                                                         "show_all": False}),
     path("all_mailing_list/", views.MailingListView.as_view(), name="all_mailing_list", kwargs={"model": "Mailing",

@@ -39,7 +39,8 @@
        class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
         Журнал попыток
     </a>
-    <a href="#" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
+    <a href="{% url 'mailing_schedule' pk=mailing.id %}"
+       class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">
         Расписание
     </a>
     {% else %}
@@ -72,11 +73,11 @@
     </a>
     {% endif %}
 </div>
-    <button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
-            onClick="javascript:history.go(-1);">Назад
-    </button>
+<button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+        onClick="javascript:history.go(-1);">Назад
+</button>
 
-    <a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На домашнюю</a>
+<a href="{% url 'home' %}" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom">На домашнюю</a>
 <div>
 
 </div>

@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 # from django.db.models.functions import Now
 from django.conf import settings
@@ -67,6 +68,20 @@ class Mailing(models.Model):
                               verbose_name='Владелец', blank=True, null=True)
 
     enabled = models.BooleanField(default=True, verbose_name='Активна')
+
+    scheduler_enabled = models.BooleanField(default=False, verbose_name='Автовыполнение активно')
+
+    scheduler_days_interval = models.IntegerField(default=1, verbose_name='Интервал в днях',
+                                                  validators=[MinValueValidator(0)])
+
+    scheduler_hours_interval = models.IntegerField(default=0, verbose_name='Интервал в часах',
+                                                   validators=[MinValueValidator(0)])
+
+    scheduler_minutes_interval = models.IntegerField(default=0, verbose_name='Интервал в минутах',
+                                                     validators=[MinValueValidator(0)])
+
+    scheduler_seconds_interval = models.IntegerField(default=0, verbose_name='Интервал в секундах',
+                                                     validators=[MinValueValidator(0)])
 
     class Meta:
         verbose_name = "Рассылка"
