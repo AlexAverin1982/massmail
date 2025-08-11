@@ -90,3 +90,34 @@ class MailingCreateForm(FormControlMixin, forms.ModelForm):
         if self.user:
             self.fields['clients'].queryset = Client.objects.all().filter(owner=self.user)
             self.fields['message'].queryset = Message.objects.all().filter(owner=self.user)
+
+class MailingScheduleForm(FormControlMixin, forms.ModelForm):
+
+    class Meta:
+        model = Mailing
+        fields = ['send_start', 'send_stop', 'scheduler_enabled', 'scheduler_days_interval',
+                  'scheduler_hours_interval', 'scheduler_minutes_interval',
+                  'scheduler_seconds_interval']
+
+        widgets = {
+            'send_start': DateTimePickerInput(),
+            'send_stop': DateTimePickerInput(),
+            'scheduler_enabled': forms.CheckboxInput(attrs={'class': 'custom-checkbox-class'}),
+            'scheduler_days_interval': forms.NumberInput(),
+            'scheduler_hours_interval': forms.NumberInput(),
+            'scheduler_minutes_interval': forms.NumberInput(),
+            'scheduler_seconds_interval': forms.NumberInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MailingScheduleForm, self).__init__(*args, **kwargs)
+        # instance = getattr(self, 'instance', None)
+        instance = kwargs.get('instance')
+        # if instance and instance.pk:
+        print(f"instance: {instance}")
+        if instance:
+            print(f"instance.send_start: {instance.send_start}")
+            self.fields['send_start'].initial = instance.send_start
+        self.fields['send_start'].widget.attrs['readonly'] = True
+        self.fields['send_stop'].widget.attrs['readonly'] = True
+

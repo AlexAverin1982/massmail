@@ -10,7 +10,7 @@ from django.core.cache import cache
 from typing_extensions import Any
 
 from .models import Client, Message, Mailing, Attempt
-from .forms import ClientCreateForm, MessageCreateForm, MailingCreateForm
+from .forms import ClientCreateForm, MessageCreateForm, MailingCreateForm, MailingScheduleForm
 
 
 class HomeView(generic.TemplateView):
@@ -337,6 +337,15 @@ class MailingErrorsView(generic.TemplateView):
     сообщение об ошибках при редактировании или создании объектов
     """
     template_name = 'errors.html'
+
+
+class MailingScheduleView(generic.FormView):
+    template_name = 'mailing_schedule.html'
+    form_class = MailingScheduleForm
+
+    def get_success_url(self):
+        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
+
 
 
 class ForceSendMailingView(generic.DetailView):
