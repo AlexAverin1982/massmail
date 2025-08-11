@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Сообщения{% endblock %}
+{% block content %}
+
+<a href="{% url 'new_message' %}" class="btn btn-lg btn-outline-success mx-2 px-5 m-3 float-bottom">
+    Добавить
+</a>
+
+{% if messages %}
+<p>
+    Сортировать по...
+<ul>
+    {% for message in messages %}
+
+    <li>
+        <a href="{% url 'message_details' pk=message.id %}">
+        <h5>Тема: {{ message.topic }}</h5>
+        </a>
+    </li>
+
+    {% endfor %}
+</ul>
+</p>
+{% else %}
+<h5>Пока сообщений нет...</h5>
+{% endif %}
+<button type="button" class="btn btn-lg btn-outline-primary mx-2 px-5 m-3 float-bottom"
+        onClick="javascript:history.go(-1);">Назад
+</button>
+
+
+{% endblock %}
+
+{% block navigation %}
+{% if messages %}
+<nav class="list-pages">
+    <ul>
+        {% for p in paginator.page_range %}
+        {% if page_obj.number == p %}
+        <li class="page-num page-num-selected">Стр. {{ p }}</li>
+        {% else %}
+        <li class="page-num">
+            <a href="?page={{ p }}">Стр. {{ p }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

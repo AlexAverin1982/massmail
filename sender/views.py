@@ -1,14 +1,11 @@
-# from http.client import HTTPResponse
-# from bootstrap_datepicker_plus.widgets import DateTimePickerInput
-# from django.db.transaction import commit
-# from django.forms import CheckboxSelectMultiple, SelectMultiple
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.urls import reverse_lazy, reverse
-# from django.core.cache import cache
-# from django.views.decorators.cache import cache_page
-# from django.utils.decorators import method_decorator
+from django.contrib.auth.models import AnonymousUser
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 
 from typing_extensions import Any
 
@@ -17,19 +14,33 @@ from .forms import ClientCreateForm, MessageCreateForm, MailingCreateForm
 
 
 class HomeView(generic.TemplateView):
+    """
+    домашняя страница: главное меню для регистрации и входа и выхода, кнопки управления.
+    основное окно - три колонки: клиенты, сообщения и рассылки пользователя
+    """
     template_name = "home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'clients': Client.objects.all(),
-            'messages': Message.objects.all().order_by('-updated_at'),
-            'mailings': Mailing.objects.all(),
-        })
+        if not isinstance(self.request.user, AnonymousUser):
+            context.update({
+                'clients': Client.objects.all().filter(owner=self.request.user),
+                'messages_to_send': Message.objects.all().filter(owner=self.request.user),
+                'mailings': Mailing.objects.all().filter(owner=self.request.user),
+                'total_mailings_count':
+                    Mailing.objects.all().filter(owner=self.request.user).count(),
+                'active_mailings_count':
+                    Mailing.objects.all().filter(owner=self.request.user).filter(status='Запущена').count(),
+                'clients_count':
+                    Client.objects.all().filter(owner=self.request.user).count()
+            })
         return context
 
 
 class ClientCreateView(generic.CreateView):
+    """
+    Вид создания клиента
+    """
     model = Client
     form_class = ClientCreateForm
     # fields = ['name', 'price', 'category', 'image', 'description']
@@ -41,20 +52,47 @@ class ClientCreateView(generic.CreateView):
     }
     success_url = reverse_lazy('home')
 
-    # def form_valid(self, form):
-    #     form.save()
-    #     return super().form_valid(form)
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        self.model.owner = self.request.user
+        return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs) -> Any:
+        request.POST = request.POST.copy()
+        request.POST['owner'] = request.user
+        data = ClientCreateForm(request.POST)
+        # print(f"request.user: {request.user}")
+
+        if data.is_valid():
+            data.instance.owner = request.user
+            update = data.save(commit=False)
+            update.owner = request.user
+            update.save()
+            data.save_m2m()
+            return HttpResponseRedirect(reverse_lazy('home'))
+        else:
+            # print(f"request.POST: {request.POST}")
+            # print(f"data: {data}")
+            # errors = self.get_form().errors
+            # print(f"errors: {errors}")
+            # kwargs['errors_data'] = self.get_form().errors
+            return HttpResponseRedirect(reverse('errors'))
 
 
-# @method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ClientDetailView(generic.DetailView):
+    """
+    просмотр свойств клиента
+    """
     model = Client
     template_name = "client_details.html"
     context_object_name = 'client'
 
 
-# LoginRequiredMixin,
 class ClientUpdateView(generic.UpdateView):
+    """
+    переход к форме изменения свойств клиента
+    """
     model = Client
     form_class = ClientCreateForm
     template_name = 'new_client.html'
@@ -69,13 +107,16 @@ class ClientUpdateView(generic.UpdateView):
 
 
 class ClientDeleteView(generic.DeleteView):
+    """
+    переход к удалению клиента
+    """
     model = Client
     success_url = reverse_lazy("home")
     context_object_name = 'client'
     template_name = 'delete_client.html'
 
     def post(self, request, *args, **kwargs) -> Any:
-        obj = Client.objects.get(id=kwargs['pk'])
+        Client.objects.get(id=kwargs['pk'])
         super(ClientDeleteView, self).post(request, *args, **kwargs)
         return redirect('home')
 
@@ -84,6 +125,9 @@ class ClientDeleteView(generic.DeleteView):
 
 
 class MessageCreateView(generic.CreateView):
+    """
+    переход к форме нового сообщения
+    """
     model = Message
     form_class = MessageCreateForm
     template_name = 'new_message.html'
@@ -94,14 +138,48 @@ class MessageCreateView(generic.CreateView):
     }
     success_url = reverse_lazy('home')
 
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.model.owner = self.request.user
+        self.object.owner = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
 
+    def post(self, request, *args, **kwargs) -> Any:
+        request.POST = request.POST.copy()
+        request.POST['owner'] = request.user
+        data = MessageCreateForm(request.POST)  # ФОРМА А НЕ ВИД!!!
+        # print(f"request.user: {request.user}")
+        # эта песня посвещена борьбе за мир!
+        if data.is_valid():
+            data.instance.owner = request.user
+            update = data.save(commit=False)
+            update.owner = request.user
+            update.save()
+            return HttpResponseRedirect(reverse_lazy('home'))
+        else:
+            # print(f"request.POST: {request.POST}")
+            # print(f"data: {data}")
+            # errors = self.get_form().errors
+            # print(f"errors: {errors}")
+            # kwargs['errors_data'] = self.get_form().errors
+            return HttpResponseRedirect(reverse('errors'))
+
+
+@method_decorator(cache_page(60 * 20), name='dispatch')
 class MessageDetailView(generic.DetailView):
+    """
+    переход к свойствам сообщения
+    """
     model = Message
     template_name = "message_details.html"
     context_object_name = 'message'
 
 
 class MessageUpdateView(generic.UpdateView):
+    """
+    переход к редактированию свойств сообщения
+    """
     model = Message
     form_class = MessageCreateForm
     template_name = 'new_message.html'
@@ -116,13 +194,16 @@ class MessageUpdateView(generic.UpdateView):
 
 
 class MessageDeleteView(generic.DeleteView):
+    """
+    переход к удалению сообщения
+    """
     model = Message
     success_url = reverse_lazy("home")
     context_object_name = 'message'
     template_name = 'delete_message.html'
 
     def post(self, request, *args, **kwargs) -> Any:
-        obj = Message.objects.get(id=kwargs['pk'])
+        Message.objects.get(id=kwargs['pk'])
         super(MessageDeleteView, self).post(request, *args, **kwargs)
         return redirect('home')
 
@@ -130,54 +211,69 @@ class MessageDeleteView(generic.DeleteView):
 #######################################################################################################################
 
 class MailingCreateView(generic.edit.CreateView):
+    """
+    переход к форме создания рассылки
+    """
     model = Mailing
     form_class = MailingCreateForm
     template_name = 'new_mailing.html'
     context_object_name = 'mailing'
-
     success_url = reverse_lazy('home')
+
+    def get_form_kwargs(self):
+        kwargs = super(MailingCreateView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        # print(f"kwargs['user']: {kwargs['user']}")
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        self.model.owner = self.request.user
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # print(f"user: {self.request.user}")
         context.update({
-            'possible_clients': Client.objects.all(),
+            'possible_clients': Client.objects.filter(owner=self.request.user),
             'title': 'Новая рассылка',
         })
         return context
 
     def post(self, request, *args, **kwargs) -> Any:
-        # request.POST = request.POST.copy()
-        # request.POST['clients'] = Client.objects.all()
-        data = MailingCreateForm(request.POST)
+        request.POST = request.POST.copy()
+        request.POST['owner'] = request.user
+        request.POST['enabled'] = True  # почему default=True не работает - ненаю
+        form_data = MailingCreateForm(request.POST)
+
         # print(f"clients: {request.POST.get('clients')}")
 
-        if data.is_valid():
-            print('here-------------------------------')
-            update = data.save(commit=False)
-            update.save()
-            data.save_m2m()
-            return HttpResponseRedirect(reverse('home'))
+        if form_data.is_valid():
+            form_data.instance.owner = request.user
+            mailing = form_data.save(commit=False)
+            mailing.owner = request.user
+            mailing.save()
+            form_data.save_m2m()
+            return redirect(reverse_lazy('mailing_details', kwargs={'pk': mailing.id}))
         else:
+            # print(f"request.POST: {request.POST}")
+            # print(f"mailing: {form_data}")
+            errors = self.get_form().errors
+            # print(f"errors: {errors}")
             kwargs['errors_data'] = self.get_form().errors
-            return HttpResponseRedirect(reverse('errors'))
-
-
-class MailingDetailView(generic.DetailView):
-    model = Mailing
-    template_name = "mailing_details.html"
-    context_object_name = 'mailing'
+            # return reverse_lazy('errors', kwargs={'errors': errors})
+            result = HttpResponseRedirect(reverse_lazy('errors', kwargs={'errors': errors}))
+            # print(f"-----------result: {result}")
+            return result
 
 
 class MailingUpdateView(generic.UpdateView):
+    """
+    переход к форме редактирования свойств рассылки
+    """
     model = Mailing
     form_class = MailingCreateForm
     template_name = 'new_mailing.html'
-
-    # extra_context = {
-    #     'title': 'Редактирование рассылки',
-    #     'mailing_editing_mode': True,
-    #     'possible_clients': Client.objects.all(),
-    # }
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -187,80 +283,94 @@ class MailingUpdateView(generic.UpdateView):
             'mailing_editing_mode': True,
         })
 
-        # print(f"context: {context}")
-        print(f"context.mailing clients: {context['mailing'].clients.all()}")
         return context
 
     def get_success_url(self):
         return reverse("mailing_details", kwargs=self.kwargs)
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class MailingDetailView(generic.DetailView):
+    """
+    просмотр свойств рассылки
+    """
+    model = Mailing
+    template_name = "mailing_details.html"
+    context_object_name = 'mailing'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context.update({
+            'owner': self.model.owner,
+            'user': self.request.user,
+        })
+
+        return context
+
+    def get(self, request, **kwargs):
+        if kwargs.get('disable'):
+            mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+            mailing.enabled = not mailing.enabled
+            mailing.save()
+            return redirect(request.META['HTTP_REFERER'])
+        return super().get(self, request, **kwargs)
+
+
 class MailingDeleteView(generic.DeleteView):
+    """
+    удаление рассылки
+    """
     model = Mailing
     success_url = reverse_lazy("home")
     context_object_name = 'mailing'
     template_name = 'delete_mailing.html'
 
     def post(self, request, *args, **kwargs) -> Any:
-        obj = Mailing.objects.get(id=kwargs['pk'])
+        Mailing.objects.get(id=kwargs['pk'])
         super(MailingDeleteView, self).post(request, *args, **kwargs)
         return redirect('home')
 
 
 class MailingErrorsView(generic.TemplateView):
+    """
+    сообщение об ошибках при редактировании или создании объектов
+    """
     template_name = 'errors.html'
 
+
 class ForceSendMailingView(generic.DetailView):
+    """
+    отправка рассылки вручную
+    """
     template_name = 'force_send_mailing.html'
 
     def get(self, request, *args, **kwargs):
-        print('force mailing to be sent manually...')
-        mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-        mailing.send()
-        return redirect('home')
+        # print('force mailing to be sent manually...')
+        try:
+            mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+            mailing.send()
+        except KeyError as e:
+            return reverse_lazy('errors', kwargs={'error_message': e.__str__()})
+
+        return redirect(request.META['HTTP_REFERER'])
 
 
-
+# @method_decorator(cache_page(60 * 20), name='dispatch')
 class MailingAttemptsListView(generic.TemplateView):
+    """
+    окно списка попыток рассылок
+    """
     # model = Attempt
-    template_name = "mailing_attempts.html"
-    # context_object_name = 'items'
-    # paginate_by = 50
-
-    # extra_context = {
-    #     'categories': Category.objects.all().order_by('name'),
-    # }
-
-    # def get_queryset(self, **kwargs):
-        # queryset = super().get_queryset(**kwargs)
-        # print(f"queryset : {queryset}")
-        # queryset = cache.get('products_queryset')
-        # if not queryset:
-        #     user = self.request.user
-        #     if is_moder(user) or is_superuser(user):
-        #         products = self.model.objects.all()
-        #     else:
-        #         products = self.model.objects.filter(is_published=True)
-        #     queryset = products.order_by("-created_at")
-        #     cache.set('products_queryset', queryset, 60 * 15)
-        # mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-        # print(mailing)
-        # print(f"kwargs.pk: {kwargs.get('pk')}")
-        # pk = self.request['pk']
-        # if pk:
-        #     attempts = self.model.objects.filter(mailing=pk)
-        #     queryset = attempts.order_by("-created_at")
-        # else:
-        #     raise Http404(f"Записи попыток для рассылки {self} не найдены")
-        #
-        # return queryset
+    # template_name = "mailing_attempts.html"
+    template_name = "attempts_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs.get('pk')
         mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
-        attempts = Attempt.objects.all()      #.filter(mailing=pk).order_by("-date_time")
-        print(f"mailing: {mailing}")
+        attempts = Attempt.objects.filter(mailing=pk)  # .filter(mailing=pk).order_by("-date_time")
+        # print(f"mailing: {mailing}")
         # print(f"attempts: {attempts}")
 
         # print(f"kwargs: {kwargs}")
@@ -270,3 +380,127 @@ class MailingAttemptsListView(generic.TemplateView):
         })
         return context
 
+
+class CopyMailingView(generic.DetailView):
+    """
+    создание копии рассылки
+    """
+
+    # template_name = 'force_send_mailing.html'
+
+    def get(self, request, *args, **kwargs):
+        # print('making copy of an existing one...')
+        mailing = get_object_or_404(Mailing, pk=kwargs.get('pk', -1))
+        mailing.id = None
+        mailing.save()
+        return redirect(reverse_lazy('mailing_details', kwargs={'pk': mailing.id}))
+
+
+class MailingListView(generic.ListView):
+    """
+    список рассылок
+    """
+    model = Mailing
+    template_name = "mailing_list.html"
+    context_object_name = 'mailings'
+    paginate_by = 50
+
+    def get_queryset(self):
+        if self.kwargs.get('show_all', False):
+            queryset = cache.get('all_mailing_list_queryset')
+            if not queryset:
+                queryset = Mailing.objects.all().order_by('id')
+                cache.set('all_mailing_list_queryset', queryset, 60 * 2)
+        else:
+            queryset = cache.get('mailing_list_queryset')
+            if not queryset:
+                queryset = Mailing.objects.all().filter(owner=self.request.user).order_by('id')
+                cache.set('mailing_list_queryset', queryset, 60 * 2)
+        return queryset
+
+
+class MessageListView(generic.ListView):
+    """
+    окно списка сообщений
+    """
+    model = Message
+    template_name = "messages_list.html"
+    context_object_name = 'messages'
+    paginate_by = 50
+
+    def get_queryset(self):
+        queryset = cache.get('messages_list_queryset')
+        if not queryset:
+            queryset = Message.objects.all().filter(owner=self.request.user).order_by('id')
+            cache.set('messages_list_queryset', queryset, 60 * 2)
+        return queryset
+
+
+class ClientListView(generic.ListView):
+    """
+    окно списка клиентов
+    """
+    model = Client
+    template_name = "clients_list.html"
+    context_object_name = 'clients'
+    paginate_by = 50
+
+    def get_queryset(self):
+        if self.kwargs.get('show_all', False):
+            return Client.objects.all().order_by('id')
+        else:
+            return Client.objects.filter(owner=self.request.user).order_by('id')
+
+
+class AttemptListView(generic.ListView):
+    """
+    окно списка попыток рассылок
+    """
+    model = Attempt
+    template_name = "attempts_list.html"
+    context_object_name = 'attempts'
+    paginate_by = 50
+
+    def get_queryset(self):
+        for att in Attempt.objects.all():
+            if att.owner is None:
+                att.owner = att.mailing.owner
+                att.save()
+
+        queryset = cache.get('mailing_attempts_list_queryset')
+        if not queryset:
+            queryset = Attempt.objects.filter(owner=self.request.user)
+            cache.set('mailing_attempts_list_queryset', queryset, 60 * 2)
+        return queryset
+
+
+class StatisticsView(generic.TemplateView):
+    """
+    окно статистики
+    """
+    template_name = 'statistics.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if not isinstance(self.request.user, AnonymousUser):
+
+            mailings_list = []
+            mailings = Mailing.objects.filter(owner=self.request.user)
+            for m in mailings:
+                m_dict = {'id': m.id, 'topic': m.message.topic, 'message_id': m.message.id,
+                          'total_attempts': Attempt.objects.filter(mailing=m.id).count(),
+                          'successful_attempts': Attempt.objects.filter(mailing=m.id).filter(
+                              is_successful=True).count(), }
+                if m_dict.get('total_attempts'):
+                    mailings_list.append(m_dict)
+
+            context.update({
+                'total_attempts_count':
+                    Attempt.objects.all().filter(owner=self.request.user).count(),
+                'successful_attempts_count':
+                    Attempt.objects.all().filter(owner=self.request.user).filter(is_successful=True).count(),
+                'mailings_list': mailings_list,
+                # 'clients_count':
+                #     Client.objects.all().filter(owner=self.request.user).count()
+            })
+        return context
